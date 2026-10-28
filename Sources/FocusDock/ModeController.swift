@@ -13,6 +13,7 @@ final class ModeController {
     private let aerospace = AeroSpace()
     private let focus = FocusSwitcher()
     private var machine: ModeMachine
+    private var tracker = FocusTracker.initial
     private var configError: ConfigError?
     private var tickTask: Task<Void, Never>?
     /// Called after every state, countdown or warning change (the menu bar listens).
@@ -34,10 +35,7 @@ final class ModeController {
 
     func start() {
         aerospace.onStatusChange = { [weak self] in self?.publish() }
-        aerospace.startRouting { [weak self] window in
-            guard let self else { return nil }
-            return WindowRouting.moveArguments(for: window, config: self.machine.config, currentModeID: self.machine.activeModeID)
-        }
+        aerospace.startEvents { [weak self] event in await self?.handle(event) }
         store.watch { [weak self] in self?.reload() }
         activate(machine.activeMode)
         refreshFocus(applyAfter: true)
@@ -77,6 +75,7 @@ final class ModeController {
 
     func stay() {
         NSLog("FocusDock: Stay pressed")
+        tracker = tracker.withJump(nil)
         update(machine.stay())
     }
 
@@ -95,12 +94,40 @@ final class ModeController {
         publish()
     }
 
+    /// Switches the dock, AeroSpace and Focus to `mode`; if the user had jumped to a window
+    /// of this mode, lands on that window.
     private func activate(_ mode: Mode) {
         UserDefaults.standard.set(mode.id, forKey: Self.savedModeKey)
         workspace.show(mode)
+        let jump = tracker.jump?.modeID == mode.id ? tracker.jump : nil
+        // Set before any suspension, so a focus event already in flight is read as an echo.
+        tracker = tracker.withJump(nil).expecting(mode.workspace)
         Task {
-            await aerospace.focus(workspace: mode.workspace)
+            await switchWorkspace(to: mode.workspace)
+            if let jump {
+                _ = await aerospace.perform(["focus", "--window-id", String(jump.windowId)], affectsStatus: false)
+            }
             await focus.apply(mode)
+        }
+    }
+
+    /// Runs a workspace switch the tracker already expects; a failed switch sends no echo.
+    private func switchWorkspace(to name: String) async {
+        if !(await aerospace.perform(["workspace", name])) { tracker = tracker.commandFailed() }
+    }
+
+    private func handle(_ event: AeroSpaceEvent) async {
+        switch event {
+        case .windowDetected(let window):
+            guard let move = WindowRouting.moveArguments(for: window, config: machine.config, currentModeID: machine.activeModeID) else { return }
+            _ = await aerospace.perform(move, affectsStatus: false)
+        case .focusChanged(let focusEvent):
+            let outcome = FocusFollow.handle(focusEvent, machine: machine, tracker: tracker, now: Date())
+            tracker = outcome.tracker
+            update(outcome.machine)
+            guard let bounce = outcome.bounceTo else { return }
+            NSLog("FocusDock: jump to %@ while in %@; back to %@", focusEvent.workspace, machine.activeModeID, bounce)
+            await switchWorkspace(to: bounce)
         }
     }
 

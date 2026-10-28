@@ -58,7 +58,8 @@ Deleting the file brings the default back.
 FocusDock drives [AeroSpace](https://github.com/nikitabobko/AeroSpace) through its CLI; it never writes the AeroSpace config (Nix owns it).
 
 - Activating a mode runs `aerospace workspace <workspace>`.
-- New windows are routed at runtime from `aerospace subscribe window-detected`: an app listed in exactly one mode moves to that mode's workspace, an app in several modes goes to the current mode's workspace, any other app stays where AeroSpace put it. Web apps count as Chrome.
+- New windows are routed at runtime from `aerospace subscribe window-detected focus-changed`: an app listed in exactly one mode moves to that mode's workspace, an app in several modes goes to the current mode's workspace, any other app stays where AeroSpace put it. Web apps count as Chrome.
+- Jumping to a window on another mode's workspace (Cmd-Tab, an AeroSpace binding, clicking a notification) counts as asking for that mode: its countdown starts and FocusDock puts you back on the current mode's workspace. Jumping again while it counts down neither resets nor shortens it; jumping to a third mode's window retargets the countdown with that mode's delay. When it completes you land on the window you jumped to; Stay cancels. A jump into a mode you can leave for free just switches, and workspaces that belong to no mode are left alone.
 - `aerospace` is looked up on `PATH`, then `/run/current-system/sw/bin`, `/etc/profiles/per-user/$USER/bin`, `/opt/homebrew/bin` and `/usr/local/bin`.
 - Without AeroSpace (not installed or not running) the dock and modes still work, and the menu shows "AeroSpace unavailable"; the subscription retries with backoff up to 30 s.
 
@@ -115,5 +116,5 @@ Accessibility (badges, window titles) and Automation for Chrome arrive in later 
 
 ## Layout
 
-- `Sources/FocusDockCore`: pure, unit-tested logic: `Config` (modes.json schema and validation), `DefaultModes`, `ModeMachine` (the mode-switch state machine, SPEC 6), `WindowRouting` (AeroSpace event parsing, routing, executable lookup, Focus shortcut names), `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (a mode's tiles), `NativeDockKeeper` (hide/restore decisions), `DockPriming` (whether the running Dock must restart).
+- `Sources/FocusDockCore`: pure, unit-tested logic: `Config` (modes.json schema and validation), `DefaultModes`, `ModeMachine` (the mode-switch state machine, SPEC 6), `WindowRouting` (window routing, executable lookup, Focus shortcut names), `FocusFollow` (subscription events, jump-to-other-mode decision, echo token), `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (a mode's tiles), `NativeDockKeeper` (hide/restore decisions), `DockPriming` (whether the running Dock must restart).
 - `Sources/FocusDock`: the AppKit/SwiftUI app: `ModeController` (runs the machine's side effects), `ConfigStore` (load, default, hot reload), `AeroSpace`, `Focus`, `MenuBar`, `DockPanel`, `DockHostingView` (mouse input), `DockView`/`PillView`/`TileView`, `Model`, `Workspace`, `NativeDock`, `DockPrimer`, `ProcessRunner`.

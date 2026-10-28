@@ -19,7 +19,7 @@ Each check below was therefore read immediately after its own action.
 |---|---|---|
 | Default config generated from installed apps (Obsidian, Notion, Notes, Claude, Chrome / WezTerm, Zed, Cursor, Chrome, Claude / Slack, WhatsApp, Discord) | pass | `~/.config/focusdock/modes.json` |
 | Pills render like the demo: active capsule in mode colour with symbol + name, inactive glass circles, divider, mode tiles, Drive web app with globe badge | pass | [writing_active.png](e2e-phase2/writing_active.png), [building_active.png](e2e-phase2/building_active.png), [social_active.png](e2e-phase2/social_active.png) |
-| Writing -> Social shows "Social 0:30" next to a white Stay capsule, ticking each second | pass (0:30, 0:29, 0:28 read 1 s apart) | [social_countdown.png](e2e-phase2/social_countdown.png) |
+| Writing -> Social shows "Social 0:30" next to a white Stay capsule, ticking each second | pass (0:30, 0:29, 0:28 read 1 s apart) | [social_countdown.png](e2e-phase2/social_countdown.png) (recaptured in the jump run below, caught mid digit roll) |
 | Extra presses shorten the wait by 3 s each | pass (0:17 -> 0:13 -> 0:10) | [social_shortened.png](e2e-phase2/social_shortened.png) |
 | Stay cancels | pass (state back to `active("writing")`) | [after_stay.png](e2e-phase2/after_stay.png) |
 | Countdown completes: dock tiles switch, AeroSpace workspace switches | pass: completion at 0:00 switched to Social and workspace S (first run); Building -> B and Writing -> W read 1.3 s after activation | [social_active.png](e2e-phase2/social_active.png), [building_active.png](e2e-phase2/building_active.png) |
@@ -50,12 +50,34 @@ Shortcut "FocusDock Off" not found
 Quit FocusDock
 ```
 
+## Jump-to-other-mode (2026-10-28, second run)
+
+Behaviour under test: jumping to a window on another mode's workspace starts that mode's countdown and keeps the user on the current mode's workspace (README, AeroSpace section).
+Setup: `com.apple.calculator` temporarily added to Social in `modes.json`, FocusDock started in Writing on workspace W; the jump is `open -a Calculator` on a running Calculator, which activates it so AeroSpace focuses its window on S.
+State read from the status item title (AX), `aerospace list-workspaces --focused`, `aerospace list-windows --focused` and FocusDock's log.
+
+| Check | Result |
+|---|---|
+| Launching Calculator routes its window to S without counting as a jump (focus stays on W) | pass |
+| Activating Calculator starts the countdown and AeroSpace snaps back to W | pass: "Social 0:29", ws W, log `jump to S while in writing; back to W` |
+| A second jump neither resets nor shortens it | pass: deadline unchanged in the log, title 0:23 -> 0:21 over the 2 s of the jump |
+| Stay cancels | pass: `active("writing")`, ws W |
+| Countdown completes: lands on S with the jumped-to window focused | pass: after 30 s `active("social")`, ws S, focused window = Calculator on S |
+| No loop: FocusDock's own `workspace` / `focus` calls never re-trigger a request | pass: no state change after activation until the next user action (also `FocusFollowNoLoopTests`) |
+| Dock strip during the countdown | [social_countdown.png](e2e-phase2/social_countdown.png) |
+
+Found and fixed during the run: quitting Calculator (the last window on S) made AeroSpace report focus on a window of W and then a windowless focus on S, which started a spurious Social countdown.
+Windowless focus events are no longer treated as jumps (`aWindowlessFocusIsNoJump`).
+Then the first event (a window on W, from the app macOS activates next) is a free exit from Social, so FocusDock followed it to Writing while AeroSpace settled on the empty S.
+Fixed: a windowless focus on another mode's workspace now puts AeroSpace back on the active mode's workspace (token path, no request), covered by `FocusFollowQuitSequenceTests`.
+Re-run of the quit sequence (Calculator in Social, Social active with Calculator focused, quit Calculator): final mode Writing, `aerospace list-workspaces --focused` = W.
+
 ## Final state
 
-FocusDock not running, native Dock restored (`autohide` 0, `autohide-delay` absent), TextEdit and Calculator quit, AeroSpace running on workspace 1, `modes.json` back to the generated default.
+After both runs: FocusDock not running, native Dock restored (`autohide` 0, `autohide-delay` absent), TextEdit and Calculator quit, AeroSpace running on workspace 1, `modes.json` back to the generated default, saved mode Writing.
 
 ## Open issues
 
 - The status item lands in the menu bar overflow on this Mac (notch + many extras); it is reachable through "Show Hidden Menu Bar Items", or by Cmd-dragging it right.
-- Switching mode moves the user away from windows on other workspaces (here workspace 1); AeroSpace then follows focus back. Mode and AeroSpace workspace can drift apart; FocusDock does not yet follow `focused-workspace-changed`.
+- Switching mode moves the user away from windows on workspaces of no mode (here workspace 1); those are deliberately left alone (see below).
 - The "AeroSpace unavailable" path was not exercised live.
