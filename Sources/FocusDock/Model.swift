@@ -25,6 +25,8 @@ final class DockModel {
     private(set) var hoveredID: String?
     /// Launch start per tile id, so every bounce starts from rest.
     private(set) var launchStarts: [String: Date] = [:]
+    /// The applied theme's dock colours; nil keeps the native look.
+    private(set) var shellTheme: ShellTheme?
     @ObservationIgnored private var icons: [String: NSImage] = [:]
 
     init(tileSize: CGFloat) {
@@ -94,6 +96,11 @@ final class DockModel {
         if modes != self.modes { self.modes = modes }
         if state != modeState { modeState = state }
         if countdown != self.countdown { self.countdown = countdown }
+    }
+
+    func setShellTheme(_ theme: ShellTheme?) {
+        guard theme != shellTheme else { return }
+        shellTheme = theme
     }
 
     func setTileSize(_ size: CGFloat) {

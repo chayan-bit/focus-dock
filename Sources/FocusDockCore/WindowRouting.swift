@@ -53,17 +53,17 @@ public enum WindowRouting {
 
 public enum AeroSpaceLocator {
     /// GUI apps get a minimal PATH, so the nix-darwin profile directories are searched too.
-    public static func candidates(path: String?, user: String) -> [String] {
+    public static func candidates(path: String?, user: String, name: String = "aerospace") -> [String] {
         let fromPath = (path ?? "").split(separator: ":").map(String.init)
         let extra = ["/run/current-system/sw/bin", "/etc/profiles/per-user/\(user)/bin", "/opt/homebrew/bin", "/usr/local/bin"]
         let dirs = (fromPath + extra).reduce(into: [String]()) { result, dir in
             if !dir.isEmpty, !result.contains(dir) { result.append(dir) }
         }
-        return dirs.map { "\($0)/aerospace" }
+        return dirs.map { "\($0)/\(name)" }
     }
 
-    public static func find(path: String?, user: String, isExecutable: (String) -> Bool) -> String? {
-        candidates(path: path, user: user).first(where: isExecutable)
+    public static func find(path: String?, user: String, name: String = "aerospace", isExecutable: (String) -> Bool) -> String? {
+        candidates(path: path, user: user, name: name).first(where: isExecutable)
     }
 }
 

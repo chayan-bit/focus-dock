@@ -9,6 +9,7 @@ struct PillView: View {
     let tileSize: CGFloat
     let press: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.shellTheme) private var theme
 
     var body: some View {
         let isExpanded = pill.label != nil
@@ -25,14 +26,20 @@ struct PillView: View {
                     .animation(reduceMotion ? nil : .snappy, value: label)
             }
         }
-        .foregroundStyle(isExpanded ? AnyShapeStyle(.white) : AnyShapeStyle(.primary.opacity(0.85)))
+        .foregroundStyle(isExpanded ? AnyShapeStyle(.white) : AnyShapeStyle(Color.themed(theme?.text, or: .primary).opacity(0.85)))
         .frame(width: size.width, height: size.height)
-        .background(Capsule().fill(isExpanded ? AnyShapeStyle(color) : AnyShapeStyle(.primary.opacity(DockMetrics.pillCollapsedFillOpacity))))
+        .background(Capsule().fill(isExpanded ? AnyShapeStyle(color) : AnyShapeStyle(collapsedFill)))
         .accessibilityElement()
         .accessibilityLabel(pill.mode.name)
         .accessibilityValue(pill.isCountdown ? (pill.label ?? "") : (isExpanded ? "active" : ""))
         .accessibilityAddTraits(.isButton)
         .accessibilityAction(.default, press)
+    }
+
+    /// A theme's collapsed pills carry its accent; without one they stay neutral.
+    private var collapsedFill: Color {
+        guard let accent = theme?.accent else { return Color.primary.opacity(DockMetrics.pillCollapsedFillOpacity) }
+        return Color(accent).opacity(DockMetrics.themedPillFillOpacity)
     }
 
     private var color: Color {

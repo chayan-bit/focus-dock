@@ -17,6 +17,9 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp "$BIN" "$APP/Contents/MacOS/FocusDock"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
+# Shipped themes and templates (docs/THEMES.md); backgrounds are synced separately.
+mkdir -p "$APP/Contents/Resources"
+cp -R "$ROOT/Themes" "$ROOT/Templates" "$APP/Contents/Resources/"
 plutil -lint "$APP/Contents/Info.plist" >&2
 codesign --force --sign - --timestamp=none "$APP" >&2
 codesign --verify --strict "$APP" >&2

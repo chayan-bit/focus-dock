@@ -9,6 +9,10 @@ if let flag = arguments.firstIndex(of: NativeDock.watchdogFlag) {
     NativeDock.runWatchdog(parentPID: parent)
 }
 
+if arguments.count > 1, arguments[1] == "theme" {
+    ThemeCLI.runAndExit(Array(arguments.dropFirst(2)))
+}
+
 // One dock at a time; a second copy must not touch the native Dock state.
 if let bundleID = Bundle.main.bundleIdentifier,
    NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)

@@ -9,6 +9,7 @@ struct TileView: View {
     let launchStart: Date?
     let open: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.shellTheme) private var theme
 
     var body: some View {
         let indicator = DockMetrics.indicator(forTileSize: size)
@@ -27,7 +28,7 @@ struct TileView: View {
             }
             if tile.isRunning {
                 RoundedRectangle(cornerRadius: indicator.cornerRadius)
-                    .fill(Color.primary.opacity(DockMetrics.indicatorOpacity))
+                    .fill(theme?.indicator.map(Color.init) ?? Color.primary.opacity(DockMetrics.indicatorOpacity))
                     .frame(width: indicator.diameter, height: indicator.diameter)
                     .offset(y: size + size * DockMetrics.indicatorCentreBelowTileRatio - indicator.diameter / 2)
             }

@@ -3,7 +3,7 @@
 A native macOS dock replacement organised around focus modes.
 Design and evidence: [docs/SPEC.md](docs/SPEC.md), [docs/research/rea-dock.md](docs/research/rea-dock.md).
 
-## Status: Phase 2 (modes)
+## Status: Phase 3 (themes)
 
 - A Liquid Glass platter at the bottom centre of the main screen, at the Dock's own window level, on every Space, never taking key focus.
 - Left: one pill per mode. The active mode is a capsule in its colour with its symbol and name; the others are small circles with just the symbol (hover for the name).
@@ -14,6 +14,8 @@ Design and evidence: [docs/SPEC.md](docs/SPEC.md), [docs/research/rea-dock.md](d
 - Menu bar item: the mode's symbol and name (or the countdown), a mode menu with the same friction, Edit modes.json, Reveal config folder, warnings, Quit.
 - The system Dock is auto-hidden while FocusDock runs and restored on quit, on SIGTERM/SIGINT/SIGHUP, and by a watchdog process if FocusDock crashes.
 - Respects Reduce Transparency (opaque platter) and Reduce Motion (fade pulse instead of a bounce, no rolling countdown digits).
+
+- Themes: Omarchy's 23 themes and its `colors.toml` + template format; `focusdock theme set <name>` (or the menu's **Theme** submenu) retints the dock, WezTerm, Neovim, Zed, btop, JankyBorders, the wallpaper and Claude Code, and `focusdock theme reset` puts every original back (see below).
 
 Not yet: badges, magnification, right-click app menus, activity classification, notifications (later phases, see SHELL-SPEC section 7).
 
@@ -52,6 +54,25 @@ Deleting the file brings the default back.
 - Required per mode: `id` (unique), `name`, `symbol` (an SF Symbol name), `color` (`#RRGGBB`), `workspace` (an AeroSpace workspace name).
 - Optional: `apps` (bundle ids, in dock order; find one with `osascript -e 'id of app "Zed"'`), `webApps`, `focus`, `exit` (absent means leaving is free; `to` overrides the delay per target mode id), `allow` and `private` (used from Phase 3).
 - `initialMode` is used when the last active mode no longer exists; FocusDock otherwise remembers the active mode across launches.
+
+## Themes
+
+```sh
+scripts/install-cli.sh                       # puts `focusdock` in ~/.local/bin when that is on PATH
+scripts/sync-backgrounds.sh [theme ...]      # optional: the themes' wallpapers (about 69 MB, checksummed)
+focusdock theme list                         # 23 themes, "*" on the current one
+focusdock theme set "Tokyo Night"
+focusdock theme next                         # or prev
+focusdock theme reset
+```
+
+- The themes and templates are Omarchy's (MIT, pinned commit in [THIRD_PARTY.md](THIRD_PARTY.md)); the format is unchanged, so an Omarchy theme directory works as is.
+- Your own themes go in `~/.config/focusdock/themes/<name>/` (same name overrides a shipped theme file by file), your own templates in `~/.config/focusdock/themed/*.tpl`.
+- A theme cloned from git may only bring colours and images: Lua, terminal configs and `vscode.json` from it are ignored and named on stderr.
+- Every switch renders into `~/.local/state/focusdock/current/next-theme`, swaps it into `current/theme` in one step under a lock, then retints in parallel; a slow retint from an older switch never lands after a newer one.
+- Re-applying the current theme moves to its next background; each theme remembers its last background.
+- Zed, btop and Claude Code get only their `theme` / `color_theme` key changed; the first switch saves your values and reset restores them byte for byte.
+- The exact files and include points are in [docs/THEMES.md](docs/THEMES.md).
 
 ## AeroSpace
 
@@ -94,7 +115,7 @@ open build/FocusDock.app
 
 To quit, choose **Quit FocusDock** from the menu bar item, or right-click an empty part of the platter.
 Quitting normally, `kill <pid>`, or Ctrl-C in a terminal all bring the system Dock back.
-The latest end-to-end results are in [docs/research/e2e-phase2.md](docs/research/e2e-phase2.md).
+The latest end-to-end results are in [docs/research/e2e-phase3.md](docs/research/e2e-phase3.md).
 
 ## How the system Dock is hidden
 
@@ -116,5 +137,8 @@ Accessibility (badges, window titles) and Automation for Chrome arrive in later 
 
 ## Layout
 
+- `Sources/FocusDockCore` themes: `ThemeColors` (colors.toml reader and resolver), `ColorMath` (mix, gradients), `TemplateRenderer`, `ThemePaths` + `ThemeRules` (layout, precedence, git safety rule, background choice), `ThemeStaging`, `ThemeEngine` (set, swap, retint batches, reset), `ThemeTargets` (Zed, Claude Code, btop, saved originals), `SettingsText` (one-key JSONC and conf edits), `ShellTheme`, `FileLock`.
+- `Sources/FocusDock` themes: `ThemeCLI`, `ThemeSystem` (engine wiring, JankyBorders and wallpaper targets), `ThemeMenu`, `ShellThemeWatcher`, `ShellStyle`.
+- `Themes/`, `Templates/`: shipped themes and templates, copied into the app by `scripts/build-app.sh`.
 - `Sources/FocusDockCore`: pure, unit-tested logic: `Config` (modes.json schema and validation), `DefaultModes`, `ModeMachine` (the mode-switch state machine, SPEC 6), `WindowRouting` (window routing, executable lookup, Focus shortcut names), `FocusFollow` (subscription events, jump-to-other-mode decision, echo token), `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (a mode's tiles), `NativeDockKeeper` (hide/restore decisions), `DockPriming` (whether the running Dock must restart).
 - `Sources/FocusDock`: the AppKit/SwiftUI app: `ModeController` (runs the machine's side effects), `ConfigStore` (load, default, hot reload), `AeroSpace`, `Focus`, `MenuBar`, `DockPanel`, `DockHostingView` (mouse input), `DockView`/`PillView`/`TileView`, `Model`, `Workspace`, `NativeDock`, `DockPrimer`, `ProcessRunner`.

@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: DockPanel?
     private var signalSources: [DispatchSourceSignal] = []
     private var screenObserver: NSObjectProtocol?
+    private var themeWatcher: ShellThemeWatcher?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         signalSources = NativeDock.installSignalHandlers()
@@ -24,7 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             stay: { [weak modes] in modes?.stay() }
         )
         let panel = DockPanel(contentView: DockHostingView(model: model, actions: actions))
-        let menuBar = MenuBar(controller: modes)
+        let menuBar = MenuBar(controller: modes, themes: ThemeMenu())
+        let themeWatcher = ShellThemeWatcher { [model] theme in model.setShellTheme(theme) }
+        themeWatcher.start()
+        self.themeWatcher = themeWatcher
         modes.onChange = { [weak menuBar] in menuBar?.update() }
         modes.start()
         self.workspace = workspace

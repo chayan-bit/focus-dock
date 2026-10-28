@@ -8,9 +8,11 @@ import FocusDockCore
 final class MenuBar: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let controller: ModeController
+    private let themes: ThemeMenu
 
-    init(controller: ModeController) {
+    init(controller: ModeController, themes: ThemeMenu) {
         self.controller = controller
+        self.themes = themes
         super.init()
         let menu = NSMenu()
         menu.delegate = self
@@ -53,6 +55,7 @@ final class MenuBar: NSObject, NSMenuDelegate {
             menu.addItem(entry)
         }
         menu.addItem(.separator())
+        menu.addItem(themes.item())
         menu.addItem(action("Edit modes.json", #selector(editConfig)))
         menu.addItem(action("Reveal config folder", #selector(revealConfig)))
         let warnings = controller.warnings

@@ -28,6 +28,7 @@ struct DockView: View {
             }
         }
         .frame(width: layout.canvasSize.width, height: layout.canvasSize.height, alignment: .topLeading)
+        .modifier(ShellThemeScope(theme: model.shellTheme))
     }
 
     private func hoverLabel(_ layout: PlatterLayout) -> (title: String, centreX: CGFloat)? {
@@ -89,9 +90,10 @@ struct DockActions {
 
 private struct DockDivider: View {
     let tileSize: CGFloat
+    @Environment(\.shellTheme) private var theme
     var body: some View {
         Rectangle()
-            .fill(Color.primary.opacity(DockMetrics.dividerOpacity))
+            .fill(Color.themed(theme?.text, or: .primary).opacity(DockMetrics.dividerOpacity))
             .frame(width: DockMetrics.dividerThickness, height: tileSize * DockMetrics.dividerHeightRatio)
     }
 }
@@ -117,7 +119,7 @@ private struct PlatterRim: View {
 private struct PlatterMaterial: ViewModifier {
     let cornerRadius: CGFloat
     let reduceTransparency: Bool
-
+    @Environment(\.shellTheme) private var theme
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -128,7 +130,7 @@ private struct PlatterMaterial: ViewModifier {
                     .shadow(color: .black.opacity(DockMetrics.shadowOpacity), radius: DockMetrics.shadowRadius, y: DockMetrics.shadowYOffset)
             )
         } else {
-            content.glassEffect(.regular, in: shape)
+            content.glassEffect(.themed(theme), in: shape)
         }
     }
 }

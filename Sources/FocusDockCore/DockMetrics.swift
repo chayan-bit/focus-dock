@@ -118,6 +118,8 @@ public enum DockMetrics {
     public static let pillSymbolLabelGapRatio: CGFloat = 6.0 / 75
     /// Fill of a collapsed pill over the platter glass.
     public static let pillCollapsedFillOpacity: Double = 0.12
+    /// Fill of a collapsed pill in the theme's accent, while a theme is applied.
+    public static let themedPillFillOpacity: Double = 0.3
 
     public static func pillHeight(tileSize: CGFloat) -> CGFloat { (tileSize * pillHeightRatio).rounded() }
     public static func pillSpacing(tileSize: CGFloat) -> CGFloat { tileSize * pillSpacingRatio }
