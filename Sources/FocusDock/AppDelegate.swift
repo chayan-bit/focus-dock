@@ -7,13 +7,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let model = DockModel(tileSize: Workspace.currentTileSize())
     private var workspace: Workspace?
     private var panel: DockPanel?
-    private var nativeDock: NativeDockKeeper?
     private var signalSources: [DispatchSourceSignal] = []
     private var screenObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         signalSources = NativeDock.installSignalHandlers()
-        nativeDock = NativeDock.hide()
+        Task { await NativeDock.hide() }
 
         let workspace = Workspace(model: model)
         let hostingView = DockHostingView(model: model) { [weak workspace] tile in workspace?.open(tile) }
@@ -30,8 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        NativeDock.restore(nativeDock)
-        nativeDock = nil
+        // Restores only if the state file exists, so this is also right mid-launch.
+        NativeDock.restore(NativeDock.keeper())
     }
 
     private func screenChanged() {

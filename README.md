@@ -42,7 +42,10 @@ FocusDock calls the `CoreDockSetAutoHideEnabled` SPI, resolved at runtime with `
 It also sets `com.apple.dock autohide-delay` to 1000 s so the hidden Dock does not slide up when the cursor touches the bottom edge.
 Before hiding it writes your original autohide setting and `autohide-delay` (value or absent) to `~/Library/Application Support/FocusDock/native-dock.json`.
 That file exists only while FocusDock has the Dock hidden: a normal quit restores both settings and deletes it.
-The running Dock reads `autohide-delay` only when it starts, so the delay takes effect after the next Dock restart (`killall Dock`, logout or reboot) that happens while FocusDock is running; FocusDock never restarts the Dock itself.
+The running Dock reads `autohide-delay` only when it starts, so at launch FocusDock restarts the Dock once (SIGTERM, same as `killall Dock`) unless the running Dock already has the delay.
+It knows that from `~/Library/Application Support/FocusDock/primed-dock.json`, which records the PID and start time of the last Dock started with the delay in place, or from a Dock that started after FocusDock wrote the delay.
+That record survives quits, so relaunching FocusDock in the same login session does not restart the Dock again.
+FocusDock enables autohide only once the primed Dock is running; if no Dock comes back within 5 s, it restores the settings and leaves the Dock visible.
 If FocusDock crashes, its watchdog (the same binary started with `--watchdog <pid>`) restores from the file; the next launch also keeps the recorded original instead of recording "hidden".
 If the system Dock ever stays hidden, run `defaults write com.apple.dock autohide -bool false && killall Dock`.
 
@@ -53,5 +56,5 @@ Accessibility (badges, window titles) and Automation for Chrome arrive in later 
 
 ## Layout
 
-- `Sources/FocusDockCore`: pure, unit-tested logic: `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (persistent-apps parsing and merge), `NativeDockKeeper` (hide/restore decisions).
-- `Sources/FocusDock`: the AppKit/SwiftUI app: `DockPanel`, `DockHostingView` (mouse input), `DockView`/`TileView`, `Model`, `Workspace`, `NativeDock`.
+- `Sources/FocusDockCore`: pure, unit-tested logic: `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (persistent-apps parsing and merge), `NativeDockKeeper` (hide/restore decisions), `DockPriming` (whether the running Dock must restart).
+- `Sources/FocusDock`: the AppKit/SwiftUI app: `DockPanel`, `DockHostingView` (mouse input), `DockView`/`TileView`, `Model`, `Workspace`, `NativeDock`, `DockPrimer`.

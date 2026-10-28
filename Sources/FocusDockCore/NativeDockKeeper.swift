@@ -53,11 +53,17 @@ public struct NativeDockKeeper {
         self.dock = dock
     }
 
-    public func hide() throws {
+    /// Records the originals (unless a crashed run already did) and writes the long delay.
+    /// The Dock only applies the delay after a restart (see DockPriming).
+    public func prepare() throws {
         if try existingOriginal() == nil {
             try store.save(NativeDockState(originalAutoHide: dock.getAutoHide(), originalAutoHideDelay: dock.getAutoHideDelay()))
         }
         dock.setAutoHideDelay(Self.hiddenAutoHideDelay)
+    }
+
+    public func hide() throws {
+        try prepare()
         dock.setAutoHide(true)
     }
 
@@ -85,28 +91,36 @@ public struct NativeDockKeeper {
     }
 }
 
-public struct FileStateStore: NativeDockStateStore {
+/// A small JSON file holding one value, or nothing.
+public struct JSONFileStore<Value: Codable> {
     public let url: URL
 
     public init(url: URL) { self.url = url }
 
-    public static var standard: FileStateStore {
+    /// `~/Library/Application Support/FocusDock/<name>`.
+    public static func standard(_ name: String) -> JSONFileStore {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return FileStateStore(url: support.appending(path: "FocusDock/native-dock.json"))
+        return JSONFileStore(url: support.appending(path: "FocusDock/\(name)"))
     }
 
-    public func load() throws -> NativeDockState? {
+    public func load() throws -> Value? {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        return try JSONDecoder().decode(NativeDockState.self, from: Data(contentsOf: url))
+        return try JSONDecoder().decode(Value.self, from: Data(contentsOf: url))
     }
 
-    public func save(_ state: NativeDockState) throws {
+    public func save(_ value: Value) throws {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try JSONEncoder().encode(state).write(to: url, options: .atomic)
+        try JSONEncoder().encode(value).write(to: url, options: .atomic)
     }
 
     public func remove() throws {
         guard FileManager.default.fileExists(atPath: url.path) else { return }
         try FileManager.default.removeItem(at: url)
     }
+}
+
+public typealias FileStateStore = JSONFileStore<NativeDockState>
+
+extension JSONFileStore: NativeDockStateStore where Value == NativeDockState {
+    public static var standard: FileStateStore { standard("native-dock.json") }
 }

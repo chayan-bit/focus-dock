@@ -38,20 +38,28 @@ enum NativeDock {
         dockAPI().map { NativeDockKeeper(store: FileStateStore.standard, dock: $0) }
     }
 
-    /// Starts the watchdog first, then hides. Without a watchdog a crash would strand the user
-    /// without a Dock, so in that case the Dock is left alone.
-    static func hide() -> NativeDockKeeper? {
+    /// Starts the watchdog, records the originals and writes the delay, makes sure the running
+    /// Dock has applied it, then hides. Without a watchdog a crash would strand the user without
+    /// a Dock, and without the delay the hidden Dock pops up at the screen edge; in either case
+    /// the Dock is left visible and the originals are restored.
+    @MainActor
+    static func hide() async {
         guard let keeper = keeper() else {
             NSLog("FocusDock: CoreDock SPI not found; leaving the system Dock visible")
-            return nil
+            return
         }
         do {
             try spawnWatchdog()
+            try keeper.prepare()
+            let delayWrittenAt = Date().timeIntervalSince1970
+            guard await DockPrimer.prime(delayWrittenAt: delayWrittenAt) else {
+                NSLog("FocusDock: the Dock did not apply autohide-delay; leaving it visible")
+                return restore(keeper)
+            }
             try keeper.hide()
-            return keeper
         } catch {
             NSLog("FocusDock: not hiding the system Dock: %@", String(describing: error))
-            return nil
+            restore(keeper)
         }
     }
 

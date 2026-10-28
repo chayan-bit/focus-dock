@@ -68,6 +68,7 @@ The native colours are bluer because the Dock blends them with the glass (vibran
 - `left_end_native_vs_focusdock.png`: 2x zoom of the left end, native on top.
 - `focusdock_hover_label.png`: the Finder label (final tail shape).
 - `bounce_frames.png`: 10 frames of the Calculator launch bounce (60 fps capture).
+- `edge_no_reveal_after_priming.png`: cursor held at the bottom edge after FocusDock primed a fresh Dock itself.
 
 ## Dock pop-up fix (approved by the user, 2026-10-28)
 
@@ -80,7 +81,7 @@ With the pref at 1000 and autohide toggled on by `CoreDockSetAutoHideEnabled`, a
 This matches the teardown: the Dock reads `autohide-delay` only in an init path.
 `CoreDockSetAutoHideEnabled(true)` does persist `autohide = 1`, so a restarted Dock comes back hidden.
 I restarted the Dock once (`killall Dock`) with the pref at 1000; the same edge test then showed no reveal ([edge_no_reveal_after_restart.png](e2e-phase1/edge_no_reveal_after_restart.png)).
-FocusDock does not restart the Dock itself.
+That one restart was manual; FocusDock now does it at launch (see below).
 
 Re-run checks:
 
@@ -93,8 +94,27 @@ Re-run checks:
 | 7 `kill -9` | PASS: watchdog restored autohide 0.11 s after the kill, deleted `autohide-delay`, removed the file and exited |
 | Final state | FocusDock and watchdog not running, `autohide` 0, `autohide-delay` absent (its original), no state file, Calculator not running |
 
-When a Dock restart is needed again:
-- The running Dock keeps the delay it read at startup. It now holds 1000 in memory even though the pref was restored to absent. That is harmless while autohide is off, but if the user turns on autohide themselves before the next Dock restart, their Dock will not reveal at the edge.
-- After any Dock start that happens while FocusDock is not running (logout and login, reboot, or a Dock crash), the Dock reads the restored default (absent, 0 s). The next FocusDock session then gets the pop-up back until the Dock restarts while FocusDock is running.
-- In practice that means one `killall Dock` per login session, after FocusDock has started. The alternative is to leave `autohide-delay` at 1000 permanently, which is harmless while autohide is off. Either needs the user's call.
+## Automatic Dock priming (approved by the user, 2026-10-28)
 
+At launch FocusDock records the originals, writes the delay, and then decides with `DockPriming.decide` (pure, in FocusDockCore, unit-tested):
+- the running Dock (PID and `sysctl` start time) equals `primed-dock.json`, or started after the delay was written: primed, hide now;
+- otherwise: send it SIGTERM once and poll every 100 ms, up to 5 s, for the relaunched Dock;
+- no Dock within 5 s: restore the originals, log, leave the Dock visible.
+Autohide is enabled only after the primed Dock is recorded. Quit and the watchdog restore as before and keep `primed-dock.json`.
+Deviation from the proposed design: a Dock whose start time is after the delay write also counts as primed, so a Dock that launchd is relaunching anyway (or that FocusDock just restarted) is accepted without a second restart.
+The start time guards against PID reuse: a reused PID with a different start time is restarted.
+
+Run (baseline: `autohide` 0, `autohide-delay` absent, no state files):
+
+| Step | Result |
+|---|---|
+| `killall Dock` once by hand to simulate a fresh login Dock (PID 44466) | done |
+| Launch FocusDock | PASS: one log line "restarting the Dock (pid 44466)", Dock PID 44466 -> 44522 within 0.5 s and no further change over 6 s; record `{"pid":44522,"startTime":1793162604.377513}`; `autohide` 1, delay 1000 |
+| Edge, cursor at (735, 955.5) for 2.5 s | PASS: only FocusDock at level 20, no native Dock window ([edge_no_reveal_after_priming.png](e2e-phase1/edge_no_reveal_after_priming.png)) |
+| Quit (AppleScript `quit`) | PASS: `autohide` 0, `autohide-delay` absent, `native-dock.json` gone, watchdog exited, `primed-dock.json` kept |
+| Relaunch | PASS: no restart log, Dock PID still 44522; edge test again shows no reveal |
+| `kill -9` the main process | PASS: watchdog restored `autohide` 0, deleted `autohide-delay`, removed `native-dock.json`, exited |
+| Final state | FocusDock and watchdog not running, getter `false`, `autohide` 0, `autohide-delay` absent, only `primed-dock.json` (`{"pid":44522,...}`) remains |
+
+Remaining limitation: the primed Dock keeps 1000 in memory after FocusDock quits.
+That is harmless while autohide is off, but if the user turns autohide on themselves before the next Dock restart, their Dock will not reveal at the edge until it restarts.

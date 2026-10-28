@@ -42,6 +42,15 @@ struct NativeDockKeeperTests {
         #expect(dock.delay == NativeDockKeeper.hiddenAutoHideDelay)
     }
 
+    @Test func prepareRecordsOriginalsAndWritesDelayWithoutHiding() throws {
+        let store = MemoryStore(), dock = FakeDock(autoHide: false, delay: nil)
+        try NativeDockKeeper(store: store, dock: dock.api).prepare()
+        #expect(store.state == NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
+        #expect(dock.delay == NativeDockKeeper.hiddenAutoHideDelay)
+        #expect(!dock.autoHide)
+        #expect(dock.setCalls.isEmpty)
+    }
+
     @Test func recordsAnExistingDelayAndRestoresIt() throws {
         let store = MemoryStore(), dock = FakeDock(autoHide: false, delay: 0.3)
         let keeper = NativeDockKeeper(store: store, dock: dock.api)
