@@ -39,6 +39,7 @@ Re-run of set tokyo-night, set catppuccin-latte, reset with the rebuilt app: Zed
 Fresh windows opened only for this run, starting from no `current/theme`: WezTerm running an ANSI swatch (`wezterm start --always-new-process`), a second WezTerm started with `--config-file ~/.config/wezterm/wezterm.lua`, Neovim on a scratch Swift file, btop, and Zed (not running before).
 After each `focusdock theme set`, a 3 s wait, then `screencapture -l <window id>` of those windows only and the sRGB median of a 9x9 background patch.
 Crops are in `e2e-phase3/apps/<step>-<app>.png`; nothing was restarted between steps.
+The process list in the btop crops is pixelated for publishing; the medians below were measured on the original captures.
 
 | Step | Expected bg | WezTerm (default config) | WezTerm (Nix config) | Neovim | btop | Zed |
 | --- | --- | --- | --- | --- | --- | --- |
