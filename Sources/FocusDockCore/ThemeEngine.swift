@@ -50,12 +50,12 @@ public struct ThemeEngine: Sendable {
     }
 
     /// Stages, renders and swaps the theme in; the retint is a separate step (`retint`).
-    public func set(_ input: String) throws(ThemeError) -> AppliedTheme {
+    public func set(_ input: String) async throws(ThemeError) -> AppliedTheme {
         guard let name = ThemeRules.normalizedName(input) else { throw .invalidName(input) }
         let available = list()
         guard available.contains(name) else { throw .notFound(name, available: available) }
         do {
-            return try FileLock.withLock(paths.lock) { try swapIn(name) }
+            return try await FileLock.withLock(paths.lock) { try swapIn(name) }
         } catch let error as ThemeError {
             throw error
         } catch {
@@ -135,7 +135,7 @@ public struct ThemeEngine: Sendable {
     /// Removes the current theme and restores every original the targets saved.
     public func reset() async throws(ThemeError) -> [String] {
         do {
-            try FileLock.withLock(paths.lock) {
+            try await FileLock.withLock(paths.lock) {
                 try? fm.removeItem(at: paths.currentTheme)
                 try? fm.removeItem(at: paths.nextTheme)
                 try? fm.removeItem(at: paths.themeName)

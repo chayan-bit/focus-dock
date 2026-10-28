@@ -39,7 +39,7 @@ final class ThemeMenu: NSObject {
         let engine = engine
         Task.detached {
             do {
-                let applied = try engine.set(name)
+                let applied = try await engine.set(name)
                 for failure in await engine.retint(applied) { NSLog("FocusDock: retint failed: %@", failure) }
             } catch {
                 NSLog("FocusDock: theme %@ failed: %@", name, String(describing: error))

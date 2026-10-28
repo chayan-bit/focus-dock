@@ -26,8 +26,8 @@ struct ThemeTargetsTests {
         let reloads = Counter()
         let engine = ThemeEngine(paths: box.paths, targets: targets(box, reloads: reloads))
 
-        #expect(await engine.retint(try engine.set("dusk")).isEmpty)
-        #expect(await engine.retint(try engine.set("paper")).isEmpty)
+        #expect(await engine.retint(try await engine.set("dusk")).isEmpty)
+        #expect(await engine.retint(try await engine.set("paper")).isEmpty)
         let home = box.paths.home
         let zed = try #require(box.read(home.appending(path: ".config/zed/settings.json")))
         #expect(try JSONKey.value("theme", in: zed) == "\"FocusDock\"")
@@ -55,7 +55,7 @@ struct ThemeTargetsTests {
         let box = try Sandbox()
         try box.write("home/.claude/settings.json", "{\n  \"model\": \"opus\"\n}\n")
         let engine = ThemeEngine(paths: box.paths, targets: targets(box))
-        #expect(await engine.retint(try engine.set("dusk")).isEmpty)
+        #expect(await engine.retint(try await engine.set("dusk")).isEmpty)
         let home = box.paths.home
         #expect(box.exists(home.appending(path: ".config/btop/btop.conf")))
         #expect(try await engine.reset().isEmpty)
@@ -68,7 +68,7 @@ struct ThemeTargetsTests {
         let box = try Sandbox()
         try box.write("home/.claude/settings.json", SettingsTextTests.claude)
         let engine = ThemeEngine(paths: box.paths, targets: targets(box))
-        #expect(await engine.retint(try engine.set("dusk")).isEmpty)
+        #expect(await engine.retint(try await engine.set("dusk")).isEmpty)
         let file = box.paths.home.appending(path: ".claude/settings.json")
         try TextFile.write(try JSONKey.setting("theme", to: "\"light\"", in: box.read(file) ?? ""), to: file)
         #expect(try await engine.reset().isEmpty)
@@ -79,8 +79,8 @@ struct ThemeTargetsTests {
         let box = try Sandbox()
         try box.write("home/.claude/settings.json", SettingsTextTests.claude)
         let engine = ThemeEngine(paths: box.paths, targets: targets(box))
-        #expect(await engine.retint(try engine.set("dusk")).isEmpty)
-        #expect(await engine.retint(try engine.set("dusk")).isEmpty)
+        #expect(await engine.retint(try await engine.set("dusk")).isEmpty)
+        #expect(await engine.retint(try await engine.set("dusk")).isEmpty)
         let saved = Originals(directory: box.paths.originals).load("claude", as: SavedSetting.self)
         #expect(saved?.raw == "\"auto\"")
     }
@@ -94,19 +94,19 @@ struct ThemeTargetsTests {
         #expect(ThemeRules.chooseBackground(candidates: [], sameTheme: false, current: nil, remembered: nil) == nil)
     }
 
-    @Test func engineLinksTheBackgroundFromDurableDirectories() throws {
+    @Test func engineLinksTheBackgroundFromDurableDirectories() async throws {
         let box = try Sandbox()
         try box.write("home/.local/share/focusdock/themes/dusk/backgrounds/b.webp", "x")
         try box.write("home/.local/share/focusdock/themes/dusk/backgrounds/a.jpg", "x")
         try box.write("home/.local/share/focusdock/themes/dusk/backgrounds/intro.mp4", "x")
         let engine = ThemeEngine(paths: box.paths, targets: [])
-        let first = try engine.set("dusk")
+        let first = try await engine.set("dusk")
         #expect(first.background?.lastPathComponent == "a.jpg")
-        let again = try engine.set("dusk")
+        let again = try await engine.set("dusk")
         #expect(again.background?.lastPathComponent == "b.webp")
-        _ = try engine.set("paper")
+        _ = try await engine.set("paper")
         #expect(!box.exists(box.paths.background))
-        let back = try engine.set("dusk")
+        let back = try await engine.set("dusk")
         #expect(back.background?.lastPathComponent == "b.webp")
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: box.paths.background.path) == back.background?.path)
     }

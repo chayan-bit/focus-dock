@@ -14,4 +14,8 @@ jobs:
       - run: swift --version
       - run: swift build
       - run: swift test
+        timeout-minutes: 5
+        env:
+          # Pool width 1: a test that blocks a cooperative thread hangs here and locally alike.
+          LIBDISPATCH_COOPERATIVE_POOL_STRICT: 1
       - run: ./scripts/build-app.sh

@@ -51,7 +51,7 @@ enum ThemeCLI {
     private static func set(_ engine: ThemeEngine, _ name: String) async -> Int32 {
         let applied: AppliedTheme
         do {
-            applied = try engine.set(name)
+            applied = try await engine.set(name)
         } catch {
             return fail(error.description)
         }

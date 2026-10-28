@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 @testable import FocusDockCore
 
@@ -50,10 +51,10 @@ final class RecordingTarget: ThemeTarget, @unchecked Sendable {
 }
 
 struct ThemeEngineTests {
-    @Test func setRendersTemplatesAndSwapsIn() throws {
+    @Test func setRendersTemplatesAndSwapsIn() async throws {
         let box = try Sandbox()
         let engine = ThemeEngine(paths: box.paths, targets: [])
-        let applied = try engine.set("Dusk")
+        let applied = try await engine.set("Dusk")
         #expect(applied.name == "dusk")
         #expect(engine.current() == "dusk")
         #expect(box.read(box.paths.currentTheme.appending(path: "focusdock.toml")) == "accent = \"#7aa2f7\"\n")
@@ -62,34 +63,34 @@ struct ThemeEngineTests {
         #expect(engine.isCurrent(applied.generation))
     }
 
-    @Test func aFileTheThemeShipsWinsOverTheTemplate() throws {
+    @Test func aFileTheThemeShipsWinsOverTheTemplate() async throws {
         let box = try Sandbox()
-        _ = try ThemeEngine(paths: box.paths, targets: []).set("dusk")
+        _ = try await ThemeEngine(paths: box.paths, targets: []).set("dusk")
         #expect(box.read(box.paths.currentTheme.appending(path: "neovim.lua")) == "return { theme = 'dusk' }\n")
-        _ = try ThemeEngine(paths: box.paths, targets: []).set("paper")
+        _ = try await ThemeEngine(paths: box.paths, targets: []).set("paper")
         #expect(box.read(box.paths.currentTheme.appending(path: "neovim.lua")) == "return { bg = '#eff1f5' }\n")
     }
 
-    @Test func userTemplatesOverrideShippedOnes() throws {
+    @Test func userTemplatesOverrideShippedOnes() async throws {
         let box = try Sandbox()
         try box.write("home/.config/focusdock/themed/focusdock.toml.tpl", "mine = \"{{ accent_strip }}\"\n")
-        _ = try ThemeEngine(paths: box.paths, targets: []).set("dusk")
+        _ = try await ThemeEngine(paths: box.paths, targets: []).set("dusk")
         #expect(box.read(box.paths.currentTheme.appending(path: "focusdock.toml")) == "mine = \"7aa2f7\"\n")
     }
 
-    @Test func userThemesOverrideShippedThemesByName() throws {
+    @Test func userThemesOverrideShippedThemesByName() async throws {
         let box = try Sandbox()
         try box.write("home/.config/focusdock/themes/dusk/colors.toml", "accent = \"#ff0000\"\nbackground = \"#000000\"\n")
         try box.write("home/.config/focusdock/themes/dusk/neovim.lua", "return { mine = true }\n")
         try box.write("home/.config/focusdock/themes/mine/colors.toml", "accent = \"#00ff00\"\n")
         let engine = ThemeEngine(paths: box.paths, targets: [])
         #expect(engine.list() == ["dusk", "mine", "paper"])
-        _ = try engine.set("dusk")
+        _ = try await engine.set("dusk")
         #expect(box.read(box.paths.currentTheme.appending(path: "focusdock.toml")) == "accent = \"#ff0000\"\n")
         #expect(box.read(box.paths.currentTheme.appending(path: "neovim.lua")) == "return { mine = true }\n")
     }
 
-    @Test func aThemeClonedFromGitMayNotShipCode() throws {
+    @Test func aThemeClonedFromGitMayNotShipCode() async throws {
         let box = try Sandbox()
         let theme = "home/.config/focusdock/themes/stranger"
         try box.write("\(theme)/.git/HEAD", "ref: refs/heads/main\n")
@@ -99,7 +100,7 @@ struct ThemeEngineTests {
         try box.write("\(theme)/README.md", "hi\n")
         try box.write("\(theme)/btop.theme", "theme[main_bg]=\"#123456\"\n")
         try FileManager.default.createSymbolicLink(at: box.root.appending(path: "\(theme)/unlock.png"), withDestinationURL: URL(filePath: "/etc/passwd"))
-        let applied = try ThemeEngine(paths: box.paths, targets: []).set("stranger")
+        let applied = try await ThemeEngine(paths: box.paths, targets: []).set("stranger")
         #expect(applied.ignored.sorted() == ["kitty.conf", "neovim.lua", "unlock.png"])
         let staged = Set((try? FileManager.default.contentsOfDirectory(atPath: box.paths.currentTheme.path)) ?? [])
         #expect(staged.contains("btop.theme"))
@@ -109,29 +110,29 @@ struct ThemeEngineTests {
         #expect(box.read(box.paths.currentTheme.appending(path: "neovim.lua")) == "return { bg = '' }\n")
     }
 
-    @Test func aHandWrittenUserThemeMayShipLua() throws {
+    @Test func aHandWrittenUserThemeMayShipLua() async throws {
         let box = try Sandbox()
         try box.write("home/.config/focusdock/themes/own/colors.toml", "accent = \"#123456\"\n")
         try box.write("home/.config/focusdock/themes/own/neovim.lua", "return { own = true }\n")
-        let applied = try ThemeEngine(paths: box.paths, targets: []).set("own")
+        let applied = try await ThemeEngine(paths: box.paths, targets: []).set("own")
         #expect(applied.ignored.isEmpty)
         #expect(box.read(box.paths.currentTheme.appending(path: "neovim.lua")) == "return { own = true }\n")
     }
 
-    @Test func rejectsUnknownAndEscapingNames() throws {
+    @Test func rejectsUnknownAndEscapingNames() async throws {
         let box = try Sandbox()
         let engine = ThemeEngine(paths: box.paths, targets: [])
-        #expect(throws: ThemeError.notFound("nope", available: ["dusk", "paper"])) { try engine.set("nope") }
-        #expect(throws: ThemeError.invalidName("../etc")) { try engine.set("../etc") }
-        #expect(throws: ThemeError.invalidName(".hidden")) { try engine.set(".hidden") }
+        await #expect(throws: ThemeError.notFound("nope", available: ["dusk", "paper"])) { try await engine.set("nope") }
+        await #expect(throws: ThemeError.invalidName("../etc")) { try await engine.set("../etc") }
+        await #expect(throws: ThemeError.invalidName(".hidden")) { try await engine.set(".hidden") }
     }
 
-    @Test func aFailedStageLeavesTheCurrentThemeUntouched() throws {
+    @Test func aFailedStageLeavesTheCurrentThemeUntouched() async throws {
         let box = try Sandbox()
         let engine = ThemeEngine(paths: box.paths, targets: [])
-        _ = try engine.set("dusk")
+        _ = try await engine.set("dusk")
         try box.write("Themes/broken/neovim.lua", "return {}\n")
-        #expect(throws: ThemeError.noColors("broken")) { try engine.set("broken") }
+        await #expect(throws: ThemeError.noColors("broken")) { try await engine.set("broken") }
         #expect(engine.current() == "dusk")
         #expect(box.read(box.paths.currentTheme.appending(path: "neovim.lua")) == "return { theme = 'dusk' }\n")
     }
@@ -149,8 +150,8 @@ struct ThemeEngineTests {
         let box = try Sandbox()
         let recorder = RecordingTarget()
         let engine = ThemeEngine(paths: box.paths, targets: [recorder])
-        let older = try engine.set("dusk")
-        let newer = try engine.set("paper")
+        let older = try await engine.set("dusk")
+        let newer = try await engine.set("paper")
         #expect(await engine.retint(newer).isEmpty)
         #expect(await engine.retint(older).isEmpty)
         #expect(recorder.applied == ["#d20f39"])
@@ -163,7 +164,7 @@ struct ThemeEngineTests {
         await withTaskGroup(of: Void.self) { group in
             for name in ["dusk", "paper", "dusk", "paper"] {
                 group.addTask {
-                    guard let applied = try? engine.set(name) else { return }
+                    guard let applied = try? await engine.set(name) else { return }
                     _ = await engine.retint(applied)
                 }
             }
@@ -174,11 +175,32 @@ struct ThemeEngineTests {
         #expect(last == expected)
     }
 
+    /// A waiter must not park a cooperative thread in flock: with more waiters than pool threads,
+    /// the suspended holder could never resume (the CI hang on a 3-core runner).
+    @Test func lockWaitersDoNotStarveASuspendedHolder() async throws {
+        let box = try Sandbox()
+        let lock = box.paths.lock
+        let inside = Mutex(0)
+        try await withThrowingTaskGroup(of: Int.self) { group in
+            for _ in 0..<(ProcessInfo.processInfo.activeProcessorCount * 2 + 2) {
+                group.addTask {
+                    try await FileLock.withLock(lock) {
+                        let holders = inside.withLock { $0 += 1; return $0 }
+                        try await Task.sleep(for: .milliseconds(1))
+                        inside.withLock { $0 -= 1 }
+                        return holders
+                    }
+                }
+            }
+            for try await holders in group { #expect(holders == 1) }
+        }
+    }
+
     @Test func resetRemovesTheThemeAndCallsEveryTarget() async throws {
         let box = try Sandbox()
         let recorder = RecordingTarget()
         let engine = ThemeEngine(paths: box.paths, targets: [recorder])
-        let applied = try engine.set("dusk")
+        let applied = try await engine.set("dusk")
         #expect(try await engine.reset().isEmpty)
         #expect(engine.current() == nil)
         #expect(!box.exists(box.paths.currentTheme))
@@ -187,21 +209,21 @@ struct ThemeEngineTests {
         #expect(recorder.applied == ["reset"])
     }
 
-    @Test func nextAndPreviousWrapAround() throws {
+    @Test func nextAndPreviousWrapAround() async throws {
         let box = try Sandbox()
         let engine = ThemeEngine(paths: box.paths, targets: [])
         #expect(engine.neighbour(offset: 1) == "dusk")
-        _ = try engine.set("paper")
+        _ = try await engine.set("paper")
         #expect(engine.neighbour(offset: 1) == "dusk")
         #expect(engine.neighbour(offset: -1) == "dusk")
     }
 
-    @Test func rendersEveryShippedThemeWithTheShippedTemplates() throws {
+    @Test func rendersEveryShippedThemeWithTheShippedTemplates() async throws {
         let box = try Sandbox()
         let paths = ThemePaths(home: box.paths.home, shippedThemes: Repo.themes, shippedTemplates: Repo.templates)
         let engine = ThemeEngine(paths: paths, targets: [])
         for name in engine.list() {
-            _ = try engine.set(name)
+            _ = try await engine.set(name)
             let files = Set((try? FileManager.default.contentsOfDirectory(atPath: paths.currentTheme.path)) ?? [])
             let expected: Set = ["colors.toml", "btop.theme", "claude.json", "focusdock.toml", "neovim.lua", "wezterm.lua", "zed.json"]
             #expect(expected.isSubset(of: files), "\(name): \(files)")
