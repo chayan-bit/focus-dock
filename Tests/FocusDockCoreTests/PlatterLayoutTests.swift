@@ -99,7 +99,8 @@ struct PillLayoutTests {
     @Test func pillsWithoutTilesHaveNoDivider() {
         let layout = PlatterLayout(tileCount: 0, dividerAfter: nil, tileSize: tile, pills: PillRow(widths: [44]))
         #expect(layout.pillDividerX == nil)
-        #expect(close(layout.platterSize.width, 8.75 + 2 + 44 + 2 + 8.75))
+        let expected: CGFloat = 8.75 + 2 + 44 + 2 + 8.75
+        #expect(close(layout.platterSize.width, expected))
     }
 
     @Test func stayFollowsTheCountdownPillAndPushesTheRest() {
@@ -133,7 +134,8 @@ struct PillLayoutTests {
 
     @Test func expandedPillsAreSymbolPlusLabelPadded() {
         let width = DockMetrics.expandedPillWidth(labelWidth: 50, tileSize: 75)
-        #expect(close(width, (75 * (2 * 13.0 / 75 + 22.0 / 75 + 6.0 / 75) + 50).rounded(.up)))
+        let symbolAndPadding: CGFloat = 75 * (2 * 13.0 / 75 + 22.0 / 75 + 6.0 / 75)
+        #expect(close(width, (symbolAndPadding + 50).rounded(.up)))
         #expect(DockMetrics.stayWidth(labelWidth: 30, tileSize: 75) == 56)
         #expect(DockMetrics.pillHeight(tileSize: 75) == 44)
     }
