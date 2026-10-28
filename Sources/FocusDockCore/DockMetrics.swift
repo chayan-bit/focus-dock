@@ -103,6 +103,38 @@ public enum DockMetrics {
     /// Room reserved around the platter so labels of edge tiles are not clipped.
     public static let cartoucheMaxHalfWidth: CGFloat = 140
 
+    // MARK: Mode pills (Phase 2)
+
+    // shortcut: pill geometry is read off the demo video frames, not measured; re-measure in E2E.
+    /// Collapsed pill diameter and expanded pill height (44 pt at 75).
+    public static let pillHeightRatio: CGFloat = 44.0 / 75
+    /// Gap between neighbouring pills and between the countdown pill and Stay.
+    public static let pillSpacingRatio: CGFloat = 6.0 / 75
+    public static let pillSymbolSizeRatio: CGFloat = 18.0 / 75
+    /// Width reserved for the symbol in an expanded pill, so labels line up.
+    public static let pillSymbolBoxRatio: CGFloat = 22.0 / 75
+    public static let pillFontSizeRatio: CGFloat = 15.0 / 75
+    public static let pillHorizontalPaddingRatio: CGFloat = 13.0 / 75
+    public static let pillSymbolLabelGapRatio: CGFloat = 6.0 / 75
+    /// Fill of a collapsed pill over the platter glass.
+    public static let pillCollapsedFillOpacity: Double = 0.12
+
+    public static func pillHeight(tileSize: CGFloat) -> CGFloat { (tileSize * pillHeightRatio).rounded() }
+    public static func pillSpacing(tileSize: CGFloat) -> CGFloat { tileSize * pillSpacingRatio }
+    public static func pillFontSize(tileSize: CGFloat) -> CGFloat { (tileSize * pillFontSizeRatio).rounded() }
+    public static func pillSymbolSize(tileSize: CGFloat) -> CGFloat { (tileSize * pillSymbolSizeRatio).rounded() }
+
+    /// Symbol + gap + label, padded; `labelWidth` is the measured text width.
+    public static func expandedPillWidth(labelWidth: CGFloat, tileSize: CGFloat) -> CGFloat {
+        let fixed = 2 * pillHorizontalPaddingRatio + pillSymbolBoxRatio + pillSymbolLabelGapRatio
+        return (tileSize * fixed + labelWidth).rounded(.up)
+    }
+
+    /// The white "Stay" capsule: label only, padded.
+    public static func stayWidth(labelWidth: CGFloat, tileSize: CGFloat) -> CGFloat {
+        (2 * tileSize * pillHorizontalPaddingRatio + labelWidth).rounded(.up)
+    }
+
     // MARK: Launch bounce (phase0 section 6)
 
     /// Apex above rest (20 pt at 75).

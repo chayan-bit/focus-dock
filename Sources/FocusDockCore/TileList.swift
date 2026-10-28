@@ -21,54 +21,36 @@ public struct AppRef: Equatable, Sendable {
 }
 
 public struct DockTile: Equatable, Sendable, Identifiable {
+    /// For a web app, Chrome under the web app's name.
     public let app: AppRef
-    public let isPinned: Bool
     public let isRunning: Bool
-    public var id: String { app.id }
+    /// Set for web apps, which open as `Google Chrome --app=<webURL>`.
+    public let webURL: URL?
+
+    public var id: String { webURL.map { "web:\($0.absoluteString)" } ?? app.id }
+    public var isWebApp: Bool { webURL != nil }
 }
 
-/// Reads the native Dock's `persistent-apps` array (`com.apple.dock` defaults).
-public enum PersistentApps {
-    public static func parse(_ value: Any?) -> [AppRef] {
-        guard let entries = value as? [Any] else { return [] }
-        return entries.compactMap(appRef(from:))
-    }
-
-    private static func appRef(from entry: Any) -> AppRef? {
-        guard let entry = entry as? [String: Any],
-              entry["tile-type"] as? String == "file-tile",
-              let tileData = entry["tile-data"] as? [String: Any],
-              let fileData = tileData["file-data"] as? [String: Any],
-              let urlString = fileData["_CFURLString"] as? String,
-              let url = fileURL(urlString, type: fileData["_CFURLStringType"] as? Int)
-        else { return nil }
-        let name = tileData["file-label"] as? String ?? url.deletingPathExtension().lastPathComponent
-        return AppRef(bundleID: tileData["bundle-identifier"] as? String, url: url, name: name)
-    }
-
-    /// `_CFURLStringType` 15 is a full URL string, 0 is a POSIX path (CFURLPathStyle).
-    private static func fileURL(_ string: String, type: Int?) -> URL? {
-        if type == 0 { return URL(fileURLWithPath: string) }
-        guard let url = URL(string: string), url.isFileURL else { return nil }
-        return url
-    }
-}
-
+/// The active mode's tiles: its installed apps in config order, then its web apps.
 public struct TileList: Equatable, Sendable {
     public let tiles: [DockTile]
-    public let hasDivider: Bool
 
-    /// Pinned apps in Dock order, then running apps that are not pinned, like the native Dock.
-    public static func merge(pinned: [AppRef], running: [AppRef]) -> TileList {
-        let uniquePinned = deduplicated(pinned)
-        let uniqueRunning = deduplicated(running)
-        let pinnedTiles = uniquePinned.map { app in
-            DockTile(app: app, isPinned: true, isRunning: uniqueRunning.contains { $0.isSameApp(as: app) })
+    public static let empty = TileList(tiles: [])
+
+    /// `chrome` is nil when Chrome is not installed; web apps are then left out.
+    public static func forMode(apps: [AppRef], webApps: [WebApp], chrome: AppRef?, running: [AppRef]) -> TileList {
+        let appTiles = deduplicated(apps).map { app in
+            DockTile(app: app, isRunning: running.contains { $0.isSameApp(as: app) }, webURL: nil)
         }
-        let runningOnly = uniqueRunning
-            .filter { app in !uniquePinned.contains { $0.isSameApp(as: app) } }
-            .map { DockTile(app: $0, isPinned: false, isRunning: true) }
-        return TileList(tiles: pinnedTiles + runningOnly, hasDivider: !pinnedTiles.isEmpty && !runningOnly.isEmpty)
+        let webTiles = chrome.map { chrome in
+            webApps.map { web in
+                DockTile(app: AppRef(bundleID: chrome.bundleID, url: chrome.url, name: web.name), isRunning: false, webURL: web.url)
+            }
+        } ?? []
+        let unique = (appTiles + webTiles).reduce(into: [DockTile]()) { result, tile in
+            if !result.contains(where: { $0.id == tile.id }) { result.append(tile) }
+        }
+        return TileList(tiles: unique)
     }
 
     private static func deduplicated(_ apps: [AppRef]) -> [AppRef] {

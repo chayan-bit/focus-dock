@@ -6,22 +6,22 @@ import SwiftUI
 /// because the panel is never key, and hit-testing uses the same PlatterLayout the view draws.
 final class DockHostingView: NSHostingView<DockView> {
     private let model: DockModel
-    private let onOpen: (DockTile) -> Void
-    private var pressedIndex: Int?
+    private let actions: DockActions
+    private var pressedHit: DockHit?
     private var trackingArea: NSTrackingArea?
 
-    init(model: DockModel, onOpen: @escaping (DockTile) -> Void) {
+    init(model: DockModel, actions: DockActions) {
         self.model = model
-        self.onOpen = onOpen
-        super.init(rootView: DockView(model: model, onOpen: onOpen))
+        self.actions = actions
+        super.init(rootView: DockView(model: model, actions: actions))
         sizingOptions = []
     }
 
     @available(*, unavailable)
-    required init(rootView: DockView) { fatalError("use init(model:onOpen:)") }
+    required init(rootView: DockView) { fatalError("use init(model:actions:)") }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("use init(model:onOpen:)") }
+    required init?(coder: NSCoder) { fatalError("use init(model:actions:)") }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
@@ -43,27 +43,35 @@ final class DockHostingView: NSHostingView<DockView> {
 
     override func mouseDown(with event: NSEvent) {
         if event.modifierFlags.contains(.control) { return rightMouseDown(with: event) }
-        pressedIndex = model.layout.tileIndex(at: canvasPoint(event))
+        pressedHit = model.layout.hit(at: canvasPoint(event))
     }
 
     override func mouseUp(with event: NSEvent) {
-        defer { pressedIndex = nil }
-        guard let index = model.layout.tileIndex(at: canvasPoint(event)), index == pressedIndex else { return }
-        onOpen(model.tiles[index])
+        defer { pressedHit = nil }
+        guard let hit = model.layout.hit(at: canvasPoint(event)), hit == pressedHit else { return }
+        switch hit {
+        case .tile(let index): actions.open(model.tiles[index])
+        case .pill(let index): actions.pill(model.pills[index].id)
+        case .stay: actions.stay()
+        }
     }
 
-    /// Hidden quit until the Phase 2 menu bar item exists: right-click empty platter space.
+    /// Right-click on empty platter space offers Quit, like the menu bar item.
     override func rightMouseDown(with event: NSEvent) {
         let point = canvasPoint(event)
-        guard model.layout.isOnPlatter(point), model.layout.tileIndex(at: point) == nil else { return }
+        guard model.layout.isOnPlatter(point), model.layout.hit(at: point) == nil else { return }
         let menu = NSMenu()
         menu.addItem(withTitle: "Quit FocusDock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
 
     private func updateHover(_ event: NSEvent) {
-        let layout = model.layout
-        model.setHovered(layout.tileIndex(at: canvasPoint(event)).map { model.tiles[$0].id })
+        let hovered: String? = switch model.layout.hit(at: canvasPoint(event)) {
+        case .tile(let index): model.tiles[index].id
+        case .pill(let index): "mode:\(model.pills[index].id)"
+        case .stay, nil: nil
+        }
+        model.setHovered(hovered)
     }
 
     /// Event location in PlatterLayout's top-left coordinates.

@@ -4,13 +4,12 @@ import SwiftUI
 /// Draws the dock canvas at absolute PlatterLayout positions. Input lives in DockHostingView.
 struct DockView: View {
     let model: DockModel
-    let onOpen: (DockTile) -> Void
+    let actions: DockActions
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
         let layout = model.layout
         ZStack(alignment: .topLeading) {
-            // The container lets later groups (mode pills, Phase 2) merge like the Dock's SDF union.
             GlassEffectContainer {
                 platter(layout)
             }
@@ -20,10 +19,10 @@ struct DockView: View {
                     .frame(width: layout.platterSize.width, height: layout.platterSize.height)
                     .offset(x: layout.platterOrigin.x, y: layout.platterOrigin.y)
             }
-            if let hovered = model.hoveredTile {
-                Cartouche(title: hovered.tile.app.name, reduceTransparency: reduceTransparency)
+            if let label = hoverLabel(layout) {
+                Cartouche(title: label.title, reduceTransparency: reduceTransparency)
                     .offset(
-                        x: layout.platterOrigin.x + layout.cellXs[hovered.index] + layout.cellWidth / 2,
+                        x: layout.platterOrigin.x + label.centreX,
                         y: layout.platterOrigin.y - DockMetrics.cartoucheGapAbovePlatter + DockMetrics.cartoucheTailHeight
                     )
             }
@@ -31,19 +30,30 @@ struct DockView: View {
         .frame(width: layout.canvasSize.width, height: layout.canvasSize.height, alignment: .topLeading)
     }
 
+    private func hoverLabel(_ layout: PlatterLayout) -> (title: String, centreX: CGFloat)? {
+        if let hovered = model.hoveredTile {
+            return (hovered.tile.app.name, layout.cellXs[hovered.index] + layout.cellWidth / 2)
+        }
+        if let pill = model.hoveredPill, layout.pillFrames.indices.contains(pill.index) {
+            return (pill.mode.name, layout.pillFrames[pill.index].midX)
+        }
+        return nil
+    }
+
     private func platter(_ layout: PlatterLayout) -> some View {
         ZStack(alignment: .topLeading) {
+            pills(layout)
             ForEach(Array(model.tiles.enumerated()), id: \.element.id) { index, tile in
                 TileView(
                     tile: tile,
                     icon: model.icon(for: tile.app),
                     size: layout.tileSize,
                     launchStart: model.launchStarts[tile.id],
-                    open: { onOpen(tile) }
+                    open: { actions.open(tile) }
                 )
                 .offset(x: layout.iconX(index), y: layout.iconY)
             }
-            if let dividerX = layout.dividerX {
+            ForEach([layout.pillDividerX, layout.dividerX].compactMap { $0 }, id: \.self) { dividerX in
                 DockDivider(tileSize: layout.tileSize)
                     .offset(x: dividerX - DockMetrics.dividerThickness / 2, y: layout.iconY + layout.tileSize * (1 - DockMetrics.dividerHeightRatio) / 2)
             }
@@ -51,6 +61,30 @@ struct DockView: View {
         .frame(width: layout.platterSize.width, height: layout.platterSize.height, alignment: .topLeading)
         .modifier(PlatterMaterial(cornerRadius: DockMetrics.platterCornerRadius(tileSize: layout.tileSize), reduceTransparency: reduceTransparency))
     }
+}
+
+extension DockView {
+    @ViewBuilder fileprivate func pills(_ layout: PlatterLayout) -> some View {
+        let pills = model.pills
+        ForEach(Array(pills.enumerated()), id: \.element.id) { index, pill in
+            if layout.pillFrames.indices.contains(index) {
+                let frame = layout.pillFrames[index]
+                PillView(pill: pill, size: frame.size, tileSize: layout.tileSize) { actions.pill(pill.id) }
+                    .offset(x: frame.minX, y: frame.minY)
+            }
+        }
+        if let stay = layout.stayFrame {
+            StayButton(size: stay.size, tileSize: layout.tileSize, stay: actions.stay)
+                .offset(x: stay.minX, y: stay.minY)
+        }
+    }
+}
+
+/// What a click on the dock does; DockHostingView calls these from its hit-testing.
+struct DockActions {
+    let open: (DockTile) -> Void
+    let pill: (String) -> Void
+    let stay: () -> Void
 }
 
 private struct DockDivider: View {

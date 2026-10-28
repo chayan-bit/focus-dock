@@ -21,6 +21,9 @@ struct TileView: View {
                     .modifier(LaunchFeedback(elapsed: launchStart.map { context.date.timeIntervalSince($0) },
                                              tileSize: size,
                                              reduceMotion: reduceMotion))
+                    .overlay(alignment: .bottomTrailing) {
+                        if tile.isWebApp { WebAppBadge(tileSize: size).offset(x: size * 0.04, y: size * 0.04) }
+                    }
             }
             if tile.isRunning {
                 RoundedRectangle(cornerRadius: indicator.cornerRadius)

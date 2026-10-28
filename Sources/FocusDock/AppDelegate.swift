@@ -6,6 +6,8 @@ import Observation
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let model = DockModel(tileSize: Workspace.currentTileSize())
     private var workspace: Workspace?
+    private var modes: ModeController?
+    private var menuBar: MenuBar?
     private var panel: DockPanel?
     private var signalSources: [DispatchSourceSignal] = []
     private var screenObserver: NSObjectProtocol?
@@ -15,9 +17,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { await NativeDock.hide() }
 
         let workspace = Workspace(model: model)
-        let hostingView = DockHostingView(model: model) { [weak workspace] tile in workspace?.open(tile) }
-        let panel = DockPanel(contentView: hostingView)
+        let modes = ModeController(model: model, workspace: workspace)
+        let actions = DockActions(
+            open: { [weak workspace] tile in workspace?.open(tile) },
+            pill: { [weak modes] id in modes?.pillPressed(id) },
+            stay: { [weak modes] in modes?.stay() }
+        )
+        let panel = DockPanel(contentView: DockHostingView(model: model, actions: actions))
+        let menuBar = MenuBar(controller: modes)
+        modes.onChange = { [weak menuBar] in menuBar?.update() }
+        modes.start()
         self.workspace = workspace
+        self.modes = modes
+        self.menuBar = menuBar
         self.panel = panel
 
         screenObserver = NotificationCenter.default.addObserver(
@@ -29,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        modes?.stop()
         // Restores only if the state file exists, so this is also right mid-launch.
         NativeDock.restore(NativeDock.keeper())
     }

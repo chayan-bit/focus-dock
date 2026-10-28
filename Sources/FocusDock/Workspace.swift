@@ -5,35 +5,26 @@ import FocusDockCore
 @MainActor
 final class Workspace {
     private let model: DockModel
-    private let pinned: [AppRef]
+    private var mode: Mode?
     private var observers: [NSObjectProtocol] = []
     /// KVO does not retain the observed app, so the app is kept alive with its observation;
     /// letting it deallocate while observed crashes in NSRunningApplication (seen in E2E).
     private var launchObservations: [String: (app: NSRunningApplication, observation: NSKeyValueObservation)] = [:]
 
-    /// The Dock always shows Finder first; it is not stored in `persistent-apps`.
-    private static let finder = AppRef(
-        bundleID: "com.apple.finder",
-        url: URL(fileURLWithPath: "/System/Library/CoreServices/Finder.app"),
-        name: "Finder"
-    )
-
     init(model: DockModel) {
         self.model = model
-        let dockDefaults = UserDefaults(suiteName: "com.apple.dock")
-        pinned = [Self.finder] + PersistentApps.parse(dockDefaults?.object(forKey: "persistent-apps")) + Self.extraApps()
         observeWorkspace()
+    }
+
+    /// Shows `mode`'s apps; bundle ids that are not installed are skipped.
+    func show(_ mode: Mode) {
+        self.mode = mode
         refresh()
     }
 
-    // shortcut: launch-argument hook (`--args -FocusDockExtraApps '("/path/App.app")'`) so E2E can
-    // launch an app that is not in the Dock; replace with the Phase 2 mode config.
-    private static func extraApps() -> [AppRef] {
-        (UserDefaults.standard.stringArray(forKey: "FocusDockExtraApps") ?? []).map { path in
-            let url = URL(fileURLWithPath: path)
-            let name = url.deletingPathExtension().lastPathComponent
-            return AppRef(bundleID: Bundle(url: url)?.bundleIdentifier, url: url, name: name)
-        }
+    private static func installedApp(_ bundleID: String) -> AppRef? {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return nil }
+        return AppRef(bundleID: bundleID, url: url, name: url.deletingPathExtension().lastPathComponent)
     }
 
     static func currentTileSize() -> CGFloat {
@@ -43,7 +34,14 @@ final class Workspace {
     }
 
     func refresh() {
-        model.setTiles(TileList.merge(pinned: pinned, running: runningApps()))
+        guard let mode else { return model.setTiles(.empty) }
+        let tiles = TileList.forMode(
+            apps: mode.apps.compactMap(Self.installedApp),
+            webApps: mode.webApps,
+            chrome: Self.installedApp(WebApp.chromeBundleID),
+            running: runningApps()
+        )
+        model.setTiles(tiles)
     }
 
     /// Always goes through LaunchServices: for a running app this activates it and sends the
@@ -51,6 +49,7 @@ final class Workspace {
     /// `NSRunningApplication.activate()` is not used because an app that is never active cannot
     /// take activation under cooperative activation (macOS 14+).
     func open(_ tile: DockTile) {
+        if let webURL = tile.webURL { return openWebApp(webURL, chrome: tile.app.url) }
         let id = tile.id
         if !tile.isRunning { model.setLaunching(id, true) }
         let configuration = NSWorkspace.OpenConfiguration()
@@ -59,6 +58,18 @@ final class Workspace {
             let pid = app?.processIdentifier
             let message = error.map { String(describing: $0) }
             Task { @MainActor [weak self] in self?.didOpen(id: id, pid: pid, error: message) }
+        }
+    }
+
+    /// `open -na "Google Chrome" --args --app=URL`, without a shell: the new instance hands the
+    /// window to the running Chrome and exits, so there is no launch to bounce for.
+    private func openWebApp(_ url: URL, chrome: URL) {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        configuration.createsNewApplicationInstance = true
+        configuration.arguments = ["--app=\(url.absoluteString)"]
+        NSWorkspace.shared.openApplication(at: chrome, configuration: configuration) { _, error in
+            if let error { NSLog("FocusDock: opening web app %@ failed: %@", url.absoluteString, String(describing: error)) }
         }
     }
 
