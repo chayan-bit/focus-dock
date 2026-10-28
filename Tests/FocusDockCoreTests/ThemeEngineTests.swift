@@ -180,14 +180,14 @@ struct ThemeEngineTests {
     @Test func lockWaitersDoNotStarveASuspendedHolder() async throws {
         let box = try Sandbox()
         let lock = box.paths.lock
-        let inside = Mutex(0)
+        let inside = Holders()
         try await withThrowingTaskGroup(of: Int.self) { group in
             for _ in 0..<(ProcessInfo.processInfo.activeProcessorCount * 2 + 2) {
                 group.addTask {
                     try await FileLock.withLock(lock) {
-                        let holders = inside.withLock { $0 += 1; return $0 }
+                        let holders = inside.count.withLock { $0 += 1; return $0 }
                         try await Task.sleep(for: .milliseconds(1))
-                        inside.withLock { $0 -= 1 }
+                        inside.count.withLock { $0 -= 1 }
                         return holders
                     }
                 }
@@ -229,4 +229,9 @@ struct ThemeEngineTests {
             #expect(expected.isSubset(of: files), "\(name): \(files)")
         }
     }
+}
+
+/// Shared across lock waiters; a class so tasks capture a Sendable reference, not a noncopyable Mutex.
+private final class Holders: Sendable {
+    let count = Mutex(0)
 }
