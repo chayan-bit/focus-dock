@@ -133,18 +133,6 @@ struct NativeDockKeeperTests {
         #expect(dock.state.delayCalls.isEmpty)
     }
 
-    @Test func applyOriginalsRestoresTheDockAndLeavesTheLedger() async throws {
-        defer { cleanUp() }
-        let dock = FakeDock(autoHide: false, delay: 0.5)
-        let keeper = keeper(dock)
-        #expect(try !keeper.applyOriginals())
-        try await keeper.hide()
-        #expect(try keeper.applyOriginals())
-        #expect(!dock.state.autoHide)
-        #expect(dock.state.delay == 0.5)
-        #expect(try ledger.entries().entries.count == 2)
-    }
-
     @Test func aValueOfTheWrongKindIsNotRestored() async throws {
         defer { cleanUp() }
         try await ledger.recordOriginal(autoHide, .string("yes"))

@@ -26,7 +26,7 @@ enum AppActions {
             }
             permissions.request(permission)
         }
-        // Same path as the menu's Quit: applicationWillTerminate restores the Dock.
+        // NSApp.terminate replays the restore ledger before quitting (AppDelegate.applicationShouldTerminate).
         registry.register("app.quit") { _ in NSApp.terminate(nil) }
     }
 

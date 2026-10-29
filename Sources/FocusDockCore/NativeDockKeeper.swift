@@ -71,19 +71,6 @@ public struct NativeDockKeeper: Sendable {
         }
     }
 
-    /// Applies the recorded originals now, without touching the ledger, for a caller that cannot
-    /// await (a synchronous quit); a later replay confirms them and truncates. Returns whether
-    /// there was anything to apply.
-    @discardableResult
-    public func applyOriginals() throws -> Bool {
-        let keys: Set = [Self.autoHideKey, Self.autoHideDelayKey]
-        let entries = try ledger.entries().entries.filter { keys.contains($0.key) }
-        for entry in entries.reversed() {
-            try apply(entry.key, entry.original)
-        }
-        return !entries.isEmpty
-    }
-
     /// Moves a `native-dock.json` left by a crashed pre-ledger run into the ledger, then deletes
     /// it. An unreadable one imports as "visible, default delay", since losing the Dock is worse
     /// than unhiding it.

@@ -90,7 +90,8 @@ enum NativeDock {
         return try await ledger.replay(SystemRestorers.all())
     }
 
-    private static func replayLogging() async {
+    /// Replays the ledger and logs what did not come back; the quit path and the watchdog use it.
+    static func replayLogging() async {
         do {
             let report = try await replayLedger()
             for (key, reason) in report.failed.sorted(by: { $0.key < $1.key }) {
@@ -98,17 +99,6 @@ enum NativeDock {
             }
         } catch {
             NSLog("FocusDock: replaying the restore ledger failed: %@", String(describing: error))
-        }
-    }
-
-    /// The synchronous quit path (applicationWillTerminate): puts the Dock originals back now
-    /// without awaiting; the watchdog's replay confirms them and truncates the ledger when this
-    /// process exits.
-    static func restore(_ keeper: NativeDockKeeper?) {
-        do {
-            try keeper?.applyOriginals()
-        } catch {
-            NSLog("FocusDock: restoring the system Dock failed: %@", String(describing: error))
         }
     }
 
@@ -148,7 +138,8 @@ enum NativeDock {
         }
     }
 
-    /// Routes termination signals through NSApp.terminate so applicationWillTerminate restores.
+    /// Routes termination signals through NSApp.terminate, so they quit through the same
+    /// ledger replay as the menu (AppDelegate.applicationShouldTerminate).
     @MainActor
     static func installSignalHandlers() -> [DispatchSourceSignal] {
         [SIGTERM, SIGINT, SIGHUP].map { sig in
