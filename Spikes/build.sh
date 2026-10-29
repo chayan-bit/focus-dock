@@ -25,7 +25,7 @@ if [[ ! -d "$APP" ]]; then
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key><string>FocusDockSpike</string>
-	<key>CFBundleIdentifier</key><string>dev.chayan.focusdock.spike</string>
+	<key>CFBundleIdentifier</key><string>dev.focusdock.spike</string>
 	<key>CFBundleName</key><string>FocusDockSpike</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>0.1</string>

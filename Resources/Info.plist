@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>FocusDock</string>
 	<key>CFBundleIdentifier</key>
-	<string>dev.chayan.focusdock</string>
+	<string>dev.focusdock.app</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
