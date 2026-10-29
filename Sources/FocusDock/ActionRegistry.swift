@@ -45,3 +45,10 @@ final class ActionRegistry {
         }
     }
 }
+
+extension ActionRegistry {
+    /// A menu item's action; the registry logs any failure, and the menu has nowhere better to show it.
+    func performFromMenu(_ id: String, _ arguments: String...) {
+        Task { _ = await perform(ActionInvocation(id: id, arguments: arguments), from: .menu) }
+    }
+}

@@ -52,9 +52,12 @@ final class ModeController {
 
     func remainingSeconds() -> Int? { machine.remainingSeconds(now: Date()) }
 
-    /// Menu warnings, most important first.
+    /// What is wrong with modes.json while the last good config stays in use.
+    var configProblems: [ConfigProblem] { configError?.items ?? [] }
+
+    /// Menu warnings other than config problems, most important first.
     var warnings: [String] {
-        var lines = configError.map { ["modes.json is invalid; keeping the last good config:"] + $0.problems } ?? []
+        var lines: [String] = []
         if case .unavailable(let reason) = aerospace.status { lines.append("AeroSpace unavailable (\(reason))") }
         return lines + focus.warnings
     }

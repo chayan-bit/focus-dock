@@ -10,6 +10,7 @@
   },
   "$defs": {
     "seconds": { "type": "number", "minimum": 0 },
+    "unit": { "type": "number", "minimum": 0, "maximum": 1 },
     "curve": {
       "description": "A named curve, or cubic-bezier control points.",
       "if": { "type": "string" },
@@ -18,7 +19,13 @@
         "type": "object",
         "required": ["bezier"],
         "additionalProperties": false,
-        "properties": { "bezier": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number" } } }
+        "properties": {
+          "bezier": {
+            "description": "x1, y1, x2, y2; Core Animation needs both x values in [0, 1].",
+            "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number" },
+            "prefixItems": [{ "$ref": "#/$defs/unit" }, true, { "$ref": "#/$defs/unit" }, true]
+          }
+        }
       }
     },
     "spring": {

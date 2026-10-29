@@ -11,18 +11,13 @@ enum NativeDock {
     private static let dockDomain = "com.apple.dock"
     private static let delayKey = "autohide-delay"
 
-    /// Resolves CoreDock{Get,Set}AutoHideEnabled at runtime (nil if the SPI is gone) and pairs
-    /// them with the Dock's `autohide-delay` pref, written through CFPreferences.
+    /// Resolves CoreDock{Get,Set}AutoHideEnabled through the capability symbol table (nil if
+    /// the SPI is gone, so hiding is skipped) and pairs them with the Dock's `autohide-delay`
+    /// pref, written through CFPreferences.
     static func dockAPI() -> NativeDockAPI? {
-        typealias Getter = @convention(c) () -> Bool
-        typealias Setter = @convention(c) (Bool) -> Void
-        let path = "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices"
-        guard let handle = dlopen(path, RTLD_LAZY),
-              let get = dlsym(handle, "CoreDockGetAutoHideEnabled"),
-              let set = dlsym(handle, "CoreDockSetAutoHideEnabled")
+        guard let getter = SymbolTable.function(.coreDockGetAutoHide, as: (@convention(c) () -> Bool).self),
+              let setter = SymbolTable.function(.coreDockSetAutoHide, as: (@convention(c) (Bool) -> Void).self)
         else { return nil }
-        let getter = unsafeBitCast(get, to: Getter.self)
-        let setter = unsafeBitCast(set, to: Setter.self)
         return NativeDockAPI(
             getAutoHide: { getter() },
             setAutoHide: { setter($0) },
@@ -44,6 +39,20 @@ enum NativeDock {
 
     static func keeper() -> NativeDockKeeper? {
         dockAPI().map { NativeDockKeeper(ledger: ledger(), dock: $0) }
+    }
+
+    /// The launch sequence: the watchdog first, so a crash at any later step is restored; then a
+    /// stale ledger left by a crashed run is replayed, so its originals are back before this run
+    /// records anything; then the Dock is hidden. No watchdog means the Dock is never touched.
+    @MainActor
+    static func launch() async {
+        do {
+            try spawnWatchdog()
+        } catch {
+            return NSLog("FocusDock: no watchdog (%@); leaving the system Dock alone", String(describing: error))
+        }
+        await replayLogging()
+        await hide()
     }
 
     /// Starts the watchdog, records the originals and writes the delay, makes sure the running

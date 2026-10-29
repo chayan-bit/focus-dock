@@ -6,16 +6,10 @@ import FocusDockCore
 enum ThemeSystem {
     static let home = FileManager.default.homeDirectoryForCurrentUser
 
-    /// Themes/ and Templates/ inside the app bundle, or under `$FOCUSDOCK_RESOURCES` (a repo checkout).
-    static var resources: URL {
-        if let override = ProcessInfo.processInfo.environment["FOCUSDOCK_RESOURCES"], !override.isEmpty {
-            return URL(filePath: override)
-        }
-        return Bundle.main.resourceURL ?? Bundle.main.bundleURL
-    }
-
+    /// Themes/ and Templates/ come from `ShippedResources` (the bundle, or `$FOCUSDOCK_RESOURCES`).
     static var paths: ThemePaths {
-        ThemePaths(home: home, shippedThemes: resources.appending(path: "Themes"), shippedTemplates: resources.appending(path: "Templates"))
+        let resources = ShippedResources.directory
+        return ThemePaths(home: home, shippedThemes: resources.appending(path: "Themes"), shippedTemplates: resources.appending(path: "Templates"))
     }
 
     static func engine() -> ThemeEngine {

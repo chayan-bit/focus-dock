@@ -96,6 +96,14 @@ struct ShellConfigTests {
         #expect(problems(motion(body)) == [expected])
     }
 
+    @Test func bezierXValuesMustLieInTheUnitIntervalWhileYValuesMayOvershoot() {
+        let body = #""elements": {"dock.reveal": {"duration": 0.4, "curve": {"bezier": [1.2, -0.5, -0.1, 1.6]}}}"#
+        #expect(problems(motion(body)) == [
+            "shell.jsonc:1:91 motion.elements.dock.reveal.curve.bezier[0]: must be <= 1",
+            "shell.jsonc:1:102 motion.elements.dock.reveal.curve.bezier[2]: must be >= 0",
+        ])
+    }
+
     @Test func reportsEveryProblemInFileOrder() {
         let found = problems("{\n \"version\": 2,\n \"motion\": {\n  \"speed\": -1,\n  \"reduceMotion\": \"x\"\n }\n}")
         #expect(found.map { $0.prefix(16) } == ["shell.jsonc:4:12", "shell.jsonc:5:19"])

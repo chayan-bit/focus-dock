@@ -6,6 +6,8 @@ import FocusDockCore
 final class Workspace {
     private let model: DockModel
     private var mode: Mode?
+    /// The `shell.jsonc` motion block, so a landing bounce matches the one TileView draws.
+    var motion = MotionConfig()
     private var observers: [NSObjectProtocol] = []
     /// KVO does not retain the observed app, so the app is kept alive with its observation;
     /// letting it deallocate while observed crashes in NSRunningApplication (seen in E2E).
@@ -92,7 +94,10 @@ final class Workspace {
         launchObservations[id]?.observation.invalidate()
         launchObservations[id] = nil
         let elapsed = model.launchStarts[id].map { Date().timeIntervalSince($0) } ?? 0
-        let landing = DockMetrics.bounceTimeToRest(elapsed: elapsed)
+        let resolver = MotionResolver(config: motion, systemReduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+        // No time scale means no bounce is drawn, so there is nothing to land.
+        let landing = DockMetrics.bounceTimeScale(resolver.spec(.dockBounce))
+            .map { DockMetrics.bounceTimeToRest(elapsed: elapsed, timeScale: $0) } ?? 0
         Task { [weak self] in
             try? await Task.sleep(for: .seconds(landing))
             self?.model.setLaunching(id, false)

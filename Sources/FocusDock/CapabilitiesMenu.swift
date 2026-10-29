@@ -7,11 +7,13 @@ import FocusDockCore
 final class CapabilitiesMenu: NSObject {
     private let resolved: Set<SymbolRef>
     private let monitor: PermissionMonitor
+    private let actions: ActionRegistry
 
     /// `resolved` is `SymbolTable.resolved(CapabilityRegistry.catalog)`, taken once at launch.
-    init(resolved: Set<SymbolRef>, monitor: PermissionMonitor) {
+    init(resolved: Set<SymbolRef>, monitor: PermissionMonitor, actions: ActionRegistry) {
         self.resolved = resolved
         self.monitor = monitor
+        self.actions = actions
     }
 
     func item() -> NSMenuItem {
@@ -63,7 +65,7 @@ final class CapabilitiesMenu: NSObject {
     }
 
     @objc private func grant(_ sender: NSMenuItem) {
-        guard let raw = sender.representedObject as? String, let permission = Permission(rawValue: raw) else { return }
-        monitor.request(permission)
+        guard let raw = sender.representedObject as? String else { return }
+        actions.performFromMenu("permission.grant", raw)
     }
 }

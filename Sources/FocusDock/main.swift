@@ -9,8 +9,15 @@ if let flag = arguments.firstIndex(of: NativeDock.watchdogFlag) {
     NativeDock.runWatchdog(parentPID: parent)
 }
 
-if arguments.count > 1, arguments[1] == "theme" {
-    ThemeCLI.runAndExit(Array(arguments.dropFirst(2)))
+if arguments.count > 1 {
+    let rest = Array(arguments.dropFirst(2))
+    switch arguments[1] {
+    case "theme": ThemeCLI.runAndExit(rest)
+    case "restore": RestoreCLI.runAndExit(rest)
+    case "config": ConfigCLI.runAndExit(rest)
+    case "capabilities": CapabilitiesCLI.runAndExit(rest)
+    default: break
+    }
 }
 
 // One dock at a time; a second copy must not touch the native Dock state.

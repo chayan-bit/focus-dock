@@ -41,7 +41,7 @@ public struct ConfigError: Error, Equatable, Sendable, CustomStringConvertible {
 }
 
 /// Where shipped resources live: the app bundle's Resources, or `$FOCUSDOCK_RESOURCES`
-/// (a repo checkout). Same rule as `ThemeSystem.resources` in the app.
+/// (a repo checkout): themes, templates and schemas.
 public enum ShippedResources {
     public static var directory: URL {
         if let override = ProcessInfo.processInfo.environment["FOCUSDOCK_RESOURCES"], !override.isEmpty {
