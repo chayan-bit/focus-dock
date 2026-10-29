@@ -2,82 +2,188 @@ import Foundation
 import Testing
 @testable import FocusDockCore
 
-private final class MemoryStore: NativeDockStateStore {
-    var state: NativeDockState?
-    var isCorrupt = false
-    init(_ state: NativeDockState? = nil) { self.state = state }
-    func load() throws -> NativeDockState? {
-        if isCorrupt { throw CocoaError(.fileReadCorruptFile) }
-        return state
+private final class FakeDock: Sendable {
+    struct State {
+        var autoHide: Bool
+        var delay: Double?
+        var setCalls: [Bool] = []
+        var delayCalls: [Double?] = []
     }
-    func save(_ state: NativeDockState) throws { self.state = state; isCorrupt = false }
-    func remove() throws { state = nil; isCorrupt = false }
-}
 
-private final class FakeDock {
-    var autoHide: Bool
-    var delay: Double?
-    var setCalls: [Bool] = []
-    var delayCalls: [Double?] = []
+    let shared: Shared<State>
+
     init(autoHide: Bool, delay: Double? = nil) {
-        self.autoHide = autoHide
-        self.delay = delay
+        shared = Shared(State(autoHide: autoHide, delay: delay))
     }
+
+    var state: State { shared.state.withLock { $0 } }
+
     var api: NativeDockAPI {
         NativeDockAPI(
-            getAutoHide: { self.autoHide },
-            setAutoHide: { self.autoHide = $0; self.setCalls.append($0) },
-            getAutoHideDelay: { self.delay },
-            setAutoHideDelay: { self.delay = $0; self.delayCalls.append($0) }
+            getAutoHide: { self.shared.state.withLock { $0.autoHide } },
+            setAutoHide: { on in self.shared.state.withLock { $0.autoHide = on; $0.setCalls.append(on) } },
+            getAutoHideDelay: { self.shared.state.withLock { $0.delay } },
+            setAutoHideDelay: { delay in self.shared.state.withLock { $0.delay = delay; $0.delayCalls.append(delay) } }
         )
     }
 }
 
 struct NativeDockKeeperTests {
-    @Test func firstLaunchRecordsOriginalAndHides() throws {
-        let store = MemoryStore(), dock = FakeDock(autoHide: false)
-        try NativeDockKeeper(store: store, dock: dock.api).hide()
-        #expect(store.state == NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-        #expect(dock.autoHide)
-        #expect(dock.delay == NativeDockKeeper.hiddenAutoHideDelay)
+    private let root = FileManager.default.temporaryDirectory.appending(path: "keeper-\(UUID().uuidString)")
+    private let hidden = NativeDockKeeper.hiddenAutoHideDelay
+    private let autoHide = NativeDockKeeper.autoHideKey
+    private let delay = NativeDockKeeper.autoHideDelayKey
+
+    private var ledger: RestoreLedger {
+        RestoreLedger(paths: ThemePaths(home: root, shippedThemes: root, shippedTemplates: root))
     }
 
-    @Test func prepareRecordsOriginalsAndWritesDelayWithoutHiding() throws {
-        let store = MemoryStore(), dock = FakeDock(autoHide: false, delay: nil)
-        try NativeDockKeeper(store: store, dock: dock.api).prepare()
-        #expect(store.state == NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-        #expect(dock.delay == NativeDockKeeper.hiddenAutoHideDelay)
-        #expect(!dock.autoHide)
-        #expect(dock.setCalls.isEmpty)
+    private var legacy: JSONFileStore<NativeDockState> {
+        JSONFileStore(url: root.appending(path: "Application Support/FocusDock/native-dock.json"))
     }
 
-    @Test func recordsAnExistingDelayAndRestoresIt() throws {
-        let store = MemoryStore(), dock = FakeDock(autoHide: false, delay: 0.3)
-        let keeper = NativeDockKeeper(store: store, dock: dock.api)
-        try keeper.hide()
-        #expect(store.state?.originalAutoHideDelay == 0.3)
-        try keeper.restore()
-        #expect(dock.delay == 0.3)
-        #expect(!dock.autoHide)
+    private func keeper(_ dock: FakeDock) -> NativeDockKeeper { NativeDockKeeper(ledger: ledger, dock: dock.api) }
+
+    private func recorded() throws -> [String: LedgerValue] {
+        Dictionary(uniqueKeysWithValues: try ledger.entries().entries.map { ($0.key, $0.original) })
     }
 
-    @Test func absentDelayIsDeletedOnRestore() throws {
-        let store = MemoryStore(), dock = FakeDock(autoHide: false, delay: nil)
-        let keeper = NativeDockKeeper(store: store, dock: dock.api)
-        try keeper.hide()
-        try keeper.restore()
-        #expect(dock.delay == nil)
-        #expect(dock.delayCalls == [NativeDockKeeper.hiddenAutoHideDelay, nil])
+    private func cleanUp() { try? FileManager.default.removeItem(at: root) }
+
+    @Test func firstLaunchRecordsOriginalsAndHides() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: false)
+        try await keeper(dock).hide()
+        #expect(try recorded() == [autoHide: .bool(false), delay: .unset])
+        #expect(dock.state.autoHide)
+        #expect(dock.state.delay == hidden)
     }
 
-    @Test func relaunchAfterCrashKeepsRecordedDelay() throws {
-        let store = MemoryStore(NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-        let dock = FakeDock(autoHide: true, delay: NativeDockKeeper.hiddenAutoHideDelay)
-        let keeper = NativeDockKeeper(store: store, dock: dock.api)
-        try keeper.hide()
-        #expect(store.state == NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-        try keeper.restore()
-        #expect(dock.delay == nil)
+    @Test func prepareRecordsOriginalsAndWritesDelayWithoutHiding() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: false)
+        try await keeper(dock).prepare()
+        #expect(try recorded() == [autoHide: .bool(false), delay: .unset])
+        #expect(dock.state.delay == hidden)
+        #expect(!dock.state.autoHide)
+        #expect(dock.state.setCalls.isEmpty)
+    }
+
+    @Test func replayRestoresAnExistingDelayAndEmptiesTheLedger() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: false, delay: 0.5)
+        let keeper = keeper(dock)
+        try await keeper.hide()
+        #expect(try recorded()[delay] == .number(0.5))
+        let report = try await ledger.replay(keeper.restorers)
+        #expect(report == RestoreReport(restored: [delay, autoHide], failed: [:], skippedLines: 0))
+        #expect(dock.state.delay == 0.5)
+        #expect(!dock.state.autoHide)
+        #expect(try ledger.entries().entries.isEmpty)
+    }
+
+    @Test func absentDelayIsDeletedOnReplay() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: false)
+        let keeper = keeper(dock)
+        try await keeper.hide()
+        _ = try await ledger.replay(keeper.restorers)
+        #expect(dock.state.delay == nil)
+        #expect(dock.state.delayCalls == [hidden, nil])
+    }
+
+    @Test func delayIsComparedAtTheDocksFloatPrecision() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: false, delay: 0.3)
+        let keeper = keeper(dock)
+        try await keeper.hide()
+        let report = try await ledger.replay(keeper.restorers)
+        #expect(report.failed.isEmpty)
+        #expect(dock.state.delay == Double(Float(0.3)))
+    }
+
+    @Test func relaunchAfterCrashKeepsTheRecordedOriginals() async throws {
+        defer { cleanUp() }
+        let crashed = FakeDock(autoHide: false)
+        try await keeper(crashed).hide()
+        let dock = FakeDock(autoHide: true, delay: hidden)
+        let keeper = keeper(dock)
+        try await keeper.hide()
+        #expect(try recorded() == [autoHide: .bool(false), delay: .unset])
+        _ = try await ledger.replay(keeper.restorers)
+        #expect(!dock.state.autoHide)
+        #expect(dock.state.delay == nil)
+    }
+
+    @Test func userWhoAlreadyAutohidesGetsAutohideBack() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: true)
+        let keeper = keeper(dock)
+        try await keeper.hide()
+        _ = try await ledger.replay(keeper.restorers)
+        #expect(dock.state.autoHide)
+    }
+
+    @Test func replayWithAnEmptyLedgerTouchesNothing() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: true)
+        let report = try await ledger.replay(keeper(dock).restorers)
+        #expect(report.restored.isEmpty)
+        #expect(dock.state.setCalls.isEmpty)
+        #expect(dock.state.delayCalls.isEmpty)
+    }
+
+    @Test func applyOriginalsRestoresTheDockAndLeavesTheLedger() async throws {
+        defer { cleanUp() }
+        let dock = FakeDock(autoHide: false, delay: 0.5)
+        let keeper = keeper(dock)
+        #expect(try !keeper.applyOriginals())
+        try await keeper.hide()
+        #expect(try keeper.applyOriginals())
+        #expect(!dock.state.autoHide)
+        #expect(dock.state.delay == 0.5)
+        #expect(try ledger.entries().entries.count == 2)
+    }
+
+    @Test func aValueOfTheWrongKindIsNotRestored() async throws {
+        defer { cleanUp() }
+        try await ledger.recordOriginal(autoHide, .string("yes"))
+        let dock = FakeDock(autoHide: true)
+        let report = try await ledger.replay(keeper(dock).restorers)
+        #expect(report.failed[autoHide] != nil)
+        #expect(dock.state.setCalls.isEmpty)
+        #expect(try recorded() == [autoHide: .string("yes")])
+    }
+
+    @Test func legacyStateFileIsImportedAndDeleted() async throws {
+        defer { cleanUp() }
+        try legacy.save(NativeDockState(originalAutoHide: true, originalAutoHideDelay: 0.5))
+        try await NativeDockKeeper.importLegacy(legacy, into: ledger)
+        #expect(try recorded() == [autoHide: .bool(true), delay: .number(0.5)])
+        #expect(try legacy.load() == nil)
+    }
+
+    @Test func unreadableLegacyFileImportsAsAVisibleDock() async throws {
+        defer { cleanUp() }
+        try FileManager.default.createDirectory(at: legacy.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("{not json".utf8).write(to: legacy.url)
+        try await NativeDockKeeper.importLegacy(legacy, into: ledger)
+        #expect(try recorded() == [autoHide: .bool(false), delay: .unset])
+        #expect(!FileManager.default.fileExists(atPath: legacy.url.path))
+    }
+
+    @Test func legacyImportKeepsOriginalsTheLedgerAlreadyHas() async throws {
+        defer { cleanUp() }
+        try await ledger.recordOriginal(autoHide, .bool(false))
+        try legacy.save(NativeDockState(originalAutoHide: true, originalAutoHideDelay: nil))
+        try await NativeDockKeeper.importLegacy(legacy, into: ledger)
+        #expect(try recorded() == [autoHide: .bool(false), delay: .unset])
+    }
+
+    @Test func noLegacyFileImportsNothing() async throws {
+        defer { cleanUp() }
+        try await NativeDockKeeper.importLegacy(legacy, into: ledger)
+        #expect(try ledger.entries().entries.isEmpty)
     }
 
     @Test func stateFileFromPhase1WithoutDelayDecodes() throws {
@@ -86,51 +192,9 @@ struct NativeDockKeeperTests {
         #expect(state == NativeDockState(originalAutoHide: true, originalAutoHideDelay: nil))
     }
 
-    @Test func relaunchAfterCrashKeepsRecordedOriginal() throws {
-        let store = MemoryStore(NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-        let dock = FakeDock(autoHide: true)
-        try NativeDockKeeper(store: store, dock: dock.api).hide()
-        #expect(store.state == NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-    }
-
-    @Test func userWhoAlreadyAutohidesGetsAutohideBack() throws {
-        let store = MemoryStore(), dock = FakeDock(autoHide: true)
-        let keeper = NativeDockKeeper(store: store, dock: dock.api)
-        try keeper.hide()
-        try keeper.restore()
-        #expect(dock.autoHide)
-        #expect(store.state == nil)
-    }
-
-    @Test func restoreAppliesOriginalAndDeletesFile() throws {
-        let store = MemoryStore(), dock = FakeDock(autoHide: false)
-        let keeper = NativeDockKeeper(store: store, dock: dock.api)
-        try keeper.hide()
-        try keeper.restore()
-        #expect(!dock.autoHide)
-        #expect(store.state == nil)
-    }
-
-    @Test func restoreWithoutFileTouchesNothing() throws {
-        let dock = FakeDock(autoHide: true)
-        let restored = try NativeDockKeeper(store: MemoryStore(), dock: dock.api).restore()
-        #expect(!restored)
-        #expect(dock.setCalls.isEmpty)
-        #expect(dock.delayCalls.isEmpty)
-    }
-
-    @Test func corruptFileFallsBackToVisibleDock() throws {
-        let store = MemoryStore()
-        store.isCorrupt = true
-        let dock = FakeDock(autoHide: true)
-        try NativeDockKeeper(store: store, dock: dock.api).hide()
-        #expect(store.state == NativeDockState(originalAutoHide: false, originalAutoHideDelay: nil))
-    }
-
     @Test func fileStoreRoundTripsAndRemoves() throws {
-        let dir = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
-        defer { try? FileManager.default.removeItem(at: dir) }
-        let store = FileStateStore(url: dir.appending(path: "nested/native-dock.json"))
+        defer { cleanUp() }
+        let store = JSONFileStore<NativeDockState>(url: root.appending(path: "nested/native-dock.json"))
         #expect(try store.load() == nil)
         try store.save(NativeDockState(originalAutoHide: true, originalAutoHideDelay: 0.5))
         #expect(try store.load() == NativeDockState(originalAutoHide: true, originalAutoHideDelay: 0.5))
