@@ -1,5 +1,4 @@
 import Foundation
-import Synchronization
 import Testing
 @testable import FocusDockCore
 
@@ -51,10 +50,4 @@ struct ReadBackTests {
         #expect(await ReadBack.poll(1, timeout: .zero) { 1 })
         #expect(!(await ReadBack.poll(1, timeout: .zero) { 2 }))
     }
-}
-
-/// Mutable state shared with `@Sendable` fakes; a class so closures capture a reference, not a noncopyable Mutex.
-final class Shared<Value: Sendable>: Sendable {
-    let state: Mutex<Value>
-    init(_ value: Value) { state = Mutex(value) }
 }

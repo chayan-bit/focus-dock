@@ -153,25 +153,22 @@ public struct RestoreLedger: Sendable {
         return (lines, skipped)
     }
 
-    /// `O_APPEND` + `fsync`, so the original is on disk before the caller's setter runs.
+    /// `O_APPEND` + a full sync, so the original survives a power cut before the caller's setter
+    /// runs; the directory is synced too when this append created the file.
     private func append(_ data: Data) throws {
-        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let directory = file.deletingLastPathComponent()
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let isNew = !FileManager.default.fileExists(atPath: file.path)
         let fd = open(file.path, O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC, 0o600)
         guard fd >= 0 else { throw Self.posixError() }
         defer { close(fd) }
-        try data.withUnsafeBytes { buffer in
-            var offset = 0
-            while offset < buffer.count {
-                let written = write(fd, buffer.baseAddress! + offset, buffer.count - offset)
-                if written < 0, errno == EINTR { continue }
-                guard written > 0 else { throw Self.posixError() }
-                offset += written
-            }
-        }
-        guard fsync(fd) == 0 else { throw Self.posixError() }
+        try Self.writeAll(fd, data)
+        try Self.fullSync(fd)
+        if isNew { try Self.syncDirectory(directory) }
     }
 
-    /// Atomic replace, so a crash mid-rewrite leaves the old lines, which replay again harmlessly.
+    /// Atomic, synced replace, so a crash or power cut mid-rewrite leaves the old lines, which
+    /// replay again harmlessly. Runs under the lock, so one fixed temp name is enough.
     private func rewrite(_ lines: [Data]) throws {
         guard !lines.isEmpty else {
             do {
@@ -180,7 +177,50 @@ public struct RestoreLedger: Sendable {
             return
         }
         let newline = Data([UInt8(ascii: "\n")])
-        try lines.map { $0 + newline }.reduce(Data(), +).write(to: file, options: .atomic)
+        let temp = file.appendingPathExtension("tmp")
+        let fd = open(temp.path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0o600)
+        guard fd >= 0 else { throw Self.posixError() }
+        do {
+            defer { close(fd) }
+            try Self.writeAll(fd, lines.map { $0 + newline }.reduce(Data(), +))
+            try Self.fullSync(fd)
+        } catch {
+            unlink(temp.path)
+            throw error
+        }
+        guard rename(temp.path, file.path) == 0 else {
+            let error = Self.posixError()
+            unlink(temp.path)
+            throw error
+        }
+        try Self.syncDirectory(file.deletingLastPathComponent())
+    }
+
+    private static func writeAll(_ fd: Int32, _ data: Data) throws {
+        try data.withUnsafeBytes { buffer in
+            var offset = 0
+            while offset < buffer.count {
+                let written = write(fd, buffer.baseAddress! + offset, buffer.count - offset)
+                if written < 0, errno == EINTR { continue }
+                guard written > 0 else { throw posixError() }
+                offset += written
+            }
+        }
+    }
+
+    /// `fsync` on macOS leaves data in the drive's cache; `F_FULLFSYNC` flushes it. Some file
+    /// systems refuse `F_FULLFSYNC`, so fall back to `fsync` there.
+    private static func fullSync(_ fd: Int32) throws {
+        guard fcntl(fd, F_FULLFSYNC) != 0 else { return }
+        guard fsync(fd) == 0 else { throw posixError() }
+    }
+
+    /// Makes a create or rename in `directory` itself durable.
+    private static func syncDirectory(_ directory: URL) throws {
+        let fd = open(directory.path, O_RDONLY | O_CLOEXEC)
+        guard fd >= 0 else { throw posixError() }
+        defer { close(fd) }
+        try fullSync(fd)
     }
 
     private static func posixError() -> POSIXError {
