@@ -8,7 +8,7 @@ struct PillView: View {
     let size: CGSize
     let tileSize: CGFloat
     let press: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.motion) private var motion
     @Environment(\.shellTheme) private var theme
 
     var body: some View {
@@ -22,8 +22,8 @@ struct PillView: View {
                     .font(Font(DockModel.pillFont(tileSize: tileSize)))
                     .lineLimit(1)
                     .fixedSize()
-                    .contentTransition(reduceMotion ? .identity : .numericText(countsDown: true))
-                    .animation(reduceMotion ? nil : .snappy, value: label)
+                    .contentTransition(motion.isReduced ? .identity : .numericText(countsDown: true))
+                    .animation(motion.isReduced ? nil : motion.spec(pill.isCountdown ? .countdownTick : .pillExpand).animation, value: label)
             }
         }
         .foregroundStyle(isExpanded ? AnyShapeStyle(.white) : AnyShapeStyle(Color.themed(theme?.text, or: .primary).opacity(0.85)))

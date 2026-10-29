@@ -4,24 +4,29 @@ import SwiftUI
 
 /// Hosts DockView and owns all mouse input. Hover uses an `.activeAlways` tracking area
 /// because the panel is never key, and hit-testing uses the same PlatterLayout the view draws.
-final class DockHostingView: NSHostingView<DockView> {
+final class DockHostingView: NSHostingView<MotionScope> {
     private let model: DockModel
     private let actions: DockActions
     private var pressedHit: DockHit?
     private var trackingArea: NSTrackingArea?
 
-    init(model: DockModel, actions: DockActions) {
+    init(model: DockModel, actions: DockActions, motion: MotionConfig = MotionConfig()) {
         self.model = model
         self.actions = actions
-        super.init(rootView: DockView(model: model, actions: actions))
+        super.init(rootView: MotionScope(model: model, actions: actions, config: motion))
         sizingOptions = []
     }
 
-    @available(*, unavailable)
-    required init(rootView: DockView) { fatalError("use init(model:actions:)") }
+    /// Applies a reloaded `shell.jsonc` motion block live; view state (running bounces) survives.
+    func setMotion(_ motion: MotionConfig) {
+        rootView = MotionScope(model: model, actions: actions, config: motion)
+    }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("use init(model:actions:)") }
+    required init(rootView: MotionScope) { fatalError("use init(model:actions:motion:)") }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("use init(model:actions:motion:)") }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 

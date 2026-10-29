@@ -8,7 +8,7 @@ struct TileView: View {
     let size: CGFloat
     let launchStart: Date?
     let open: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.motion) private var motion
     @Environment(\.shellTheme) private var theme
 
     var body: some View {
@@ -21,7 +21,8 @@ struct TileView: View {
                     .frame(width: size, height: size)
                     .modifier(LaunchFeedback(elapsed: launchStart.map { context.date.timeIntervalSince($0) },
                                              tileSize: size,
-                                             reduceMotion: reduceMotion))
+                                             timeScale: DockMetrics.bounceTimeScale(motion.spec(.dockBounce)),
+                                             reduceMotion: motion.isReduced))
                     .overlay(alignment: .bottomTrailing) {
                         if tile.isWebApp { WebAppBadge(tileSize: size).offset(x: size * 0.04, y: size * 0.04) }
                     }
@@ -46,10 +47,12 @@ struct TileView: View {
 private struct LaunchFeedback: ViewModifier {
     let elapsed: Double?
     let tileSize: CGFloat
+    /// From the `dock.bounce` spec; nil means no feedback at all.
+    let timeScale: Double?
     let reduceMotion: Bool
 
     func body(content: Content) -> some View {
-        let lift = elapsed.map { DockMetrics.bounceOffset(elapsed: $0, tileSize: tileSize) } ?? 0
+        let lift = elapsed.flatMap { elapsed in timeScale.map { DockMetrics.bounceOffset(elapsed: elapsed, tileSize: tileSize, timeScale: $0) } } ?? 0
         if reduceMotion {
             content.opacity(1 - 0.45 * lift / (tileSize * DockMetrics.bounceApexRatio))
         } else {

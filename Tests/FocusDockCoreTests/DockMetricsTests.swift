@@ -71,4 +71,23 @@ struct DockMetricsTests {
         #expect(samples.allSatisfy { $0 >= 0 && $0 <= 20.001 })
         #expect(DockMetrics.headroom(tileSize: 75) >= 20)
     }
+
+    @Test func bounceTimeScaleStretchesTheWholeCycle() {
+        for t in stride(from: 0.0, through: 1.4, by: 0.07) {
+            let stretched = DockMetrics.bounceOffset(elapsed: t * 2, tileSize: 75, timeScale: 2)
+            #expect(abs(stretched - DockMetrics.bounceOffset(elapsed: t, tileSize: 75)) < 0.001)
+        }
+        let mid = DockMetrics.bouncePeriod
+        #expect(abs(DockMetrics.bounceTimeToRest(elapsed: 0.42 * 2, timeScale: 2) - 2 * DockMetrics.bounceTimeToRest(elapsed: 0.42)) < 0.001)
+        #expect(DockMetrics.bounceTimeToRest(elapsed: mid * 0.5 * 3, timeScale: 3) > 0)
+    }
+
+    @Test func bounceTimeScaleFollowsTheResolvedSpec() {
+        #expect(DockMetrics.bounceTimeScale(.timed(duration: 0.70, curve: .dockBounce)) == 1)
+        #expect(abs(DockMetrics.bounceTimeScale(.timed(duration: 1.4, curve: .dockBounce))! - 2) < 1e-9)
+        #expect(abs(DockMetrics.bounceTimeScale(.crossFade(duration: 0.35))! - 0.5) < 1e-9)
+        #expect(DockMetrics.bounceTimeScale(.instant) == nil)
+        #expect(DockMetrics.bounceTimeScale(.dockSwipe(velocity: 1)) == nil)
+        #expect(DockMetrics.bounceTimeScale(.timed(duration: 0, curve: .linear)) == nil)
+    }
 }

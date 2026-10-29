@@ -149,9 +149,10 @@ public enum DockMetrics {
 
     /// Height above rest, in points, `elapsed` seconds into a launch. Rise decelerates,
     /// the fall accelerates like gravity (phase0), and the cycle repeats until launch ends.
-    public static func bounceOffset(elapsed: Double, tileSize: CGFloat) -> CGFloat {
+    /// `timeScale` stretches the cycle (2 = twice as long), from the `dock.bounce` motion spec.
+    public static func bounceOffset(elapsed: Double, tileSize: CGFloat, timeScale: Double = 1) -> CGFloat {
         let apex = tileSize * bounceApexRatio
-        let t = max(elapsed, 0).truncatingRemainder(dividingBy: bouncePeriod)
+        let t = (max(elapsed, 0) / timeScale).truncatingRemainder(dividingBy: bouncePeriod)
         if t < bounceRiseSeconds {
             let p = t / bounceRiseSeconds
             return apex * CGFloat(1 - (1 - p) * (1 - p))
@@ -162,9 +163,16 @@ public enum DockMetrics {
     }
 
     /// Seconds until the bounce in progress `elapsed` seconds into a launch is back at rest.
-    public static func bounceTimeToRest(elapsed: Double) -> Double {
-        let t = max(elapsed, 0).truncatingRemainder(dividingBy: bouncePeriod)
-        return t == 0 ? 0 : bouncePeriod - t
+    public static func bounceTimeToRest(elapsed: Double, timeScale: Double = 1) -> Double {
+        let t = (max(elapsed, 0) / timeScale).truncatingRemainder(dividingBy: bouncePeriod)
+        return t == 0 ? 0 : (bouncePeriod - t) * timeScale
+    }
+
+    /// The `timeScale` a resolved `dock.bounce` spec asks for, or nil when it has no length
+    /// (instant, so no bounce at all).
+    public static func bounceTimeScale(_ spec: MotionSpec) -> Double? {
+        guard let duration = spec.duration, duration > 0 else { return nil }
+        return duration / bouncePeriod
     }
 
     /// Transparent space above the platter for the cartouche and the bounce.
