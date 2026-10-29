@@ -22,9 +22,8 @@ jobs:
       - uses: actions/checkout@v5
       - run: swift --version
       - run: swift build
-      - run: swift test
+      - run: swift build --build-tests --enable-code-coverage
+      # Tests with LIBDISPATCH_COOPERATIVE_POOL_STRICT=1, then fails below 80% line coverage on FocusDockCore.
+      - run: ./scripts/coverage.sh 80
         timeout-minutes: 5
-        env:
-          # Pool width 1: a test that blocks a cooperative thread hangs here and locally alike.
-          LIBDISPATCH_COOPERATIVE_POOL_STRICT: 1
       - run: ./scripts/build-app.sh

@@ -106,6 +106,7 @@ Requires Xcode with the macOS 27 SDK (Swift 6.4); runs on macOS 26 or later.
 
 ```sh
 swift test                 # unit tests (FocusDockCore)
+scripts/coverage.sh        # the same tests with coverage; fails below 80% lines on FocusDockCore, as CI does
 scripts/build-app.sh       # prints the path of build/FocusDock.app
 ```
 
