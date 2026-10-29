@@ -1,0 +1,2144 @@
+{
+ "AXRole": "AXApplication",
+ "AXRoleDescription": "application",
+ "AXTitle": "<redacted 19 chars>",
+ "children": [
+  {
+   "AXRole": "AXWindow",
+   "AXRoleDescription": "system dialog",
+   "AXSubrole": "AXSystemDialog",
+   "AXTitle": "<redacted 19 chars>",
+   "actions": [
+    "AXRaise"
+   ],
+   "children": [
+    {
+     "AXRole": "AXGroup",
+     "AXRoleDescription": "group",
+     "AXSubrole": "AXHostingView",
+     "children": [
+      {
+       "AXRole": "AXGroup",
+       "AXRoleDescription": "group",
+       "children": [
+        {
+         "AXRole": "AXScrollArea",
+         "AXRoleDescription": "scroll area",
+         "actions": [
+          "AXScrollLeftByPage",
+          "AXScrollRightByPage",
+          "AXScrollUpByPage",
+          "AXScrollDownByPage"
+         ],
+         "children": [
+          {
+           "AXDescription": "FocusDockSpike, FDS-S5-72203, FocusDock spike S5 banner",
+           "AXIdentifier": "<id>",
+           "AXRole": "AXGroup",
+           "AXRoleDescription": "group",
+           "AXSubrole": "AXNotificationCenterBanner",
+           "actions": [
+            "AXPress",
+            "<custom action, redacted>",
+            "Name:FDS Act\nTarget:0x0\nSelector:(null)",
+            "<custom action, redacted>"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXStaticText",
+             "AXRoleDescription": "text",
+             "AXValue": "FDS-S5-72203",
+             "actions": [
+              "AXShowMenu"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXStaticText",
+             "AXRoleDescription": "text",
+             "AXValue": "<redacted 25 chars>",
+             "actions": [
+              "AXShowMenu"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXGroup",
+         "AXRoleDescription": "group"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "AXIdentifier": "<id>",
+   "AXRole": "AXMenuBar",
+   "AXRoleDescription": "menu bar",
+   "actions": [
+    "AXCancel"
+   ],
+   "children": [
+    {
+     "AXRole": "AXMenuBarItem",
+     "AXRoleDescription": "menu bar item",
+     "AXTitle": "<redacted 5 chars>",
+     "actions": [
+      "AXCancel",
+      "AXPress",
+      "AXPick"
+     ],
+     "children": [
+      {
+       "AXRole": "AXMenu",
+       "AXRoleDescription": "menu",
+       "actions": [
+        "AXCancel"
+       ],
+       "children": [
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 14 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 18 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 26 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 21 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 12 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 7 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 24 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 6 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 23 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 14 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 31 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 13 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 30 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 9 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 26 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 5 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 22 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 6 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 23 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 9 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 26 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 15 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 32 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 8 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 25 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 9 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 27 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 14 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 31 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 14 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 31 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 8 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 25 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 28 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 45 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 20 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 37 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 11 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 28 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 29 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 14 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 31 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 29 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 7 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 11 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 30 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 5 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 8 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 7 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 10 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 9 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 11 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 24 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 23 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "AXIdentifier": "<id>",
+     "AXRole": "AXMenuBarItem",
+     "AXRoleDescription": "menu bar item",
+     "AXTitle": "<redacted 19 chars>",
+     "actions": [
+      "AXCancel",
+      "AXPress",
+      "AXPick"
+     ],
+     "children": [
+      {
+       "AXIdentifier": "<id>",
+       "AXRole": "AXMenu",
+       "AXRoleDescription": "menu",
+       "actions": [
+        "AXCancel"
+       ]
+      }
+     ]
+    },
+    {
+     "AXIdentifier": "<id>",
+     "AXRole": "AXMenuBarItem",
+     "AXRoleDescription": "menu bar item",
+     "AXTitle": "<redacted 4 chars>",
+     "actions": [
+      "AXCancel",
+      "AXPress",
+      "AXPick"
+     ],
+     "children": [
+      {
+       "AXIdentifier": "<id>",
+       "AXRole": "AXMenu",
+       "AXRoleDescription": "menu",
+       "actions": [
+        "AXCancel"
+       ]
+      }
+     ]
+    },
+    {
+     "AXIdentifier": "<id>",
+     "AXRole": "AXMenuBarItem",
+     "AXRoleDescription": "menu bar item",
+     "AXTitle": "<redacted 4 chars>",
+     "actions": [
+      "AXCancel",
+      "AXPress",
+      "AXPick"
+     ],
+     "children": [
+      {
+       "AXIdentifier": "<id>",
+       "AXRole": "AXMenu",
+       "AXRoleDescription": "menu",
+       "actions": [
+        "AXCancel"
+       ],
+       "children": [
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 4 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 4 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 3 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 4 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 5 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 21 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 6 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 10 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 4 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 5 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 17 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 9 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 13 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 22 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 17 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 20 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 25 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 18 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 27 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 27 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 30 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 13 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 18 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 16 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 11 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 14 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 16 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 15 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 15 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 15 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 6 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 14 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 13 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 8 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 8 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 12 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 16 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 15 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "AXIdentifier": "<id>",
+     "AXRole": "AXMenuBarItem",
+     "AXRoleDescription": "menu bar item",
+     "AXTitle": "<redacted 6 chars>",
+     "actions": [
+      "AXCancel",
+      "AXPress",
+      "AXPick"
+     ],
+     "children": [
+      {
+       "AXIdentifier": "<id>",
+       "AXRole": "AXMenu",
+       "AXRoleDescription": "menu",
+       "actions": [
+        "AXCancel"
+       ],
+       "children": [
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 4 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 4 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 6 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 9 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 6 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 7 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 4 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ],
+             "children": [
+              {
+               "AXIdentifier": "<id>",
+               "AXRole": "AXMenu",
+               "AXRoleDescription": "menu",
+               "actions": [
+                "AXCancel"
+               ],
+               "children": [
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 11 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 8 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 7 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 6 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 9 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ],
+             "children": [
+              {
+               "AXIdentifier": "<id>",
+               "AXRole": "AXMenu",
+               "AXRoleDescription": "menu",
+               "actions": [
+                "AXCancel"
+               ],
+               "children": [
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 11 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 8 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 7 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 8 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ],
+             "children": [
+              {
+               "AXIdentifier": "<id>",
+               "AXRole": "AXMenu",
+               "AXRoleDescription": "menu",
+               "actions": [
+                "AXCancel"
+               ],
+               "children": [
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 11 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 11 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 9 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 5 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 5 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 11 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 11 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "AXIdentifier": "<id>",
+         "AXRole": "AXMenuItem",
+         "AXRoleDescription": "menu item",
+         "AXTitle": "<redacted 4 chars>",
+         "actions": [
+          "AXCancel",
+          "AXPress",
+          "AXPick"
+         ],
+         "children": [
+          {
+           "AXIdentifier": "<id>",
+           "AXRole": "AXMenu",
+           "AXRoleDescription": "menu",
+           "actions": [
+            "AXCancel"
+           ],
+           "children": [
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 6 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 7 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 11 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 17 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ],
+             "children": [
+              {
+               "AXIdentifier": "<id>",
+               "AXRole": "AXMenu",
+               "AXRoleDescription": "menu",
+               "actions": [
+                "AXCancel"
+               ],
+               "children": [
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 9 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 11 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 17 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 17 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 9 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 11 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 17 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                },
+                {
+                 "AXIdentifier": "<id>",
+                 "AXRole": "AXMenuItem",
+                 "AXRoleDescription": "menu item",
+                 "AXTitle": "<redacted 17 chars>",
+                 "actions": [
+                  "AXCancel",
+                  "AXPress",
+                  "AXPick"
+                 ]
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 10 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            },
+            {
+             "AXIdentifier": "<id>",
+             "AXRole": "AXMenuItem",
+             "AXRoleDescription": "menu item",
+             "AXTitle": "<redacted 11 chars>",
+             "actions": [
+              "AXCancel",
+              "AXPress",
+              "AXPick"
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
