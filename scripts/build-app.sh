@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds a release binary and assembles an ad-hoc signed build/FocusDock.app.
+# Builds a release binary and assembles build/FocusDock.app, signed with
+# $FOCUSDOCK_SIGN_IDENTITY when set (README, Build) and ad hoc otherwise.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,7 +22,7 @@ cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 mkdir -p "$APP/Contents/Resources"
 cp -R "$ROOT/Themes" "$ROOT/Templates" "$APP/Contents/Resources/"
 plutil -lint "$APP/Contents/Info.plist" >&2
-codesign --force --sign - --timestamp=none "$APP" >&2
+codesign --force --sign "${FOCUSDOCK_SIGN_IDENTITY:--}" --timestamp=none "$APP" >&2
 codesign --verify --strict "$APP" >&2
 
 echo "$APP"

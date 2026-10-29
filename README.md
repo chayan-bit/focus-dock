@@ -104,8 +104,19 @@ Requires Xcode with the macOS 27 SDK (Swift 6.4); runs on macOS 26 or later.
 
 ```sh
 swift test                 # unit tests (FocusDockCore)
-scripts/build-app.sh       # prints the path of build/FocusDock.app (ad-hoc signed)
+scripts/build-app.sh       # prints the path of build/FocusDock.app
 ```
+
+The app is signed ad hoc unless `FOCUSDOCK_SIGN_IDENTITY` names a code-signing identity.
+macOS ties Accessibility and Screen Recording grants to the signature, and an ad hoc signature changes with every build, so each rebuild loses the grants.
+A local self-signed identity keeps them across rebuilds; create it once:
+
+1. Open Keychain Access and choose **Keychain Access > Certificate Assistant > Create a Certificate...**.
+2. Enter a name of your choice, set **Identity Type** to **Self Signed Root** and **Certificate Type** to **Code Signing**, then choose **Create**.
+3. Check that it is listed: `security find-identity -v -p codesigning`.
+4. Export the name in your shell profile: `export FOCUSDOCK_SIGN_IDENTITY="<the name you chose>"`.
+
+The identity stays in your login keychain; nothing in this repository creates or reads it.
 
 ## Run
 
