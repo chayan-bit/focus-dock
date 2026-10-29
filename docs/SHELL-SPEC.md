@@ -1,4 +1,4 @@
-# FocusDock Shell - spec v2 (draft, 2026-10-28; amended 2026-10-29 with the Phase 4 spike results)
+# FocusDock Shell - spec v2 (draft, 2026-10-28; amended 2026-10-29 with the Phase 4 spike results and the Phase 5 resolutions)
 
 Spec v2 turns FocusDock from "a dock that drives other tools" into a fully native macOS shell: one Swift process that owns Spaces, borders, bar, switcher, notifications, system controls, a fleet view and an agent console, Omarchy-style.
 It supersedes spec v1 (git history); [SPEC.md](SPEC.md) stays the source of truth for the dock, modes, activity and notification classification, and [THEMES.md](THEMES.md) for the theme contract.
@@ -66,6 +66,8 @@ Non-goals:
 | Agent | `claude -p` stream-json child process with `--permission-prompt-tool stdio` (spike S14) + `focusdock-mcp` stdio shim | PUBLIC | inherits the app's grants |
 
 Every SPI symbol is resolved with `dlsym` at launch into a capability registry; a missing symbol hides the widget or action that needs it and lists it on a Capabilities page, never crashes.
+Phase 5: the page is the menu bar's **Capabilities** submenu and `focusdock capabilities`; the native Dock hide resolves CoreDock through the same registry and is skipped when the symbols are gone.
+Catalog entries may carry a `minimumOS`; the SPI drift test skips an entry below it, and skipped entries are reviewed by hand.
 
 ### 3.2 Not possible without SIP (not planned)
 
@@ -86,22 +88,27 @@ Spike S2 removed "jump to any Space instantly, without the slide" from this tabl
 ### 4.1 Processes
 - `FocusDock.app` (`LSUIElement`): one process hosting every surface as a module: dock, bar, command bar, switcher, overview, cards, OSD, borders, fleet view, agent console, wallpaper.
 - Watchdog: the same binary in watchdog mode (exists today), extended to replay the restore ledger (4.3) when the parent dies.
-- `focusdock` CLI: the same binary with arguments (exists for `theme`); gains `space`, `mode`, `config check`, `restore`.
+- `focusdock` CLI: the same binary with arguments: `theme`, and since Phase 5 `config check [file]`, `restore` and `capabilities`; `space` and `mode` come with Phase 6.
 - `focusdock-mcp`: a stdio shim the `claude` CLI launches, forwarding to the app over a 0600 unix socket in `~/.local/state/focusdock/`.
 - Children: one `claude` process per agent session; one `ssh` ControlMaster per polled host.
 - Pure logic (layouts, motion resolution, policy, config validation, fleet parsing) lives in `FocusDockCore` with unit tests, as today.
 - Main-thread rule (spike run D): any synchronous wait on the main thread must pump events (`nextEventMatchingMask` + `sendEvent`), or Carbon hotkeys and AppKit, UserNotifications and ScreenCaptureKit callbacks are lost until it returns; nested run loops must not run inside a GCD main-queue block.
+- Quit never waits on the main thread either: `applicationShouldTerminate` returns `.terminateLater`, replays the restore ledger off the main thread, then replies; a replay stuck for 5 s replies anyway and the watchdog finishes it.
 - Borderless overlay windows must be checked on 27: the spike's borderless marker window never reached the screen (run F).
 
 ### 4.2 Permissions onboarding
-- Nothing is requested at first launch except Accessibility, which the dock already needs.
+- Nothing is requested at first launch, Accessibility included: the first module that declares it (Phase 6) asks for it.
 - Each module declares the permissions it needs; without them it renders a quiet disabled state with one "Grant" button that opens the exact System Settings pane, and starts working when the grant appears (polled, no relaunch).
 - Order offered: Accessibility (Spaces, windows, menus), Screen Recording (animation proxies, switcher, status mirrors), Full Disk Access (notifications), Location (Wi-Fi name), Automation (only if an integration needs it).
-- A stable signing identity is required so TCC grants survive rebuilds; `scripts/build-app.sh` signs with it.
+- A stable signing identity is required so TCC grants survive rebuilds; `scripts/build-app.sh` signs with `FOCUSDOCK_SIGN_IDENTITY` when it is set (README, Build) and ad hoc otherwise; nothing touches the keychain automatically.
+- Probes: Accessibility is `AXIsProcessTrusted` plus `CGPreflightPostEventAccess`; Screen Recording is `CGPreflightScreenCaptureAccess`; Full Disk Access is whether the usernoted db opens; Location is the authorisation status only; Automation is probed per target app when an integration needs it.
+- A Screen Recording grant must take effect without a relaunch; this and the Settings pane URLs are checked by hand at acceptance, and a "Relaunch FocusDock" item is added if the preflight stays cached.
 
 ### 4.3 Crash restore
 - Every setter on system state first appends the original value to `~/.local/state/focusdock/restore.jsonl`: native Dock autohide, menu bar autohide, symbolic hotkeys 1 and 2, the `hidutil` key mapping, Focus, appearance, accent colour (the key is deleted when it was originally unset), Night Shift.
 - Clean quit, the watchdog and the next launch all replay the ledger in reverse and truncate it; `focusdock restore` does the same by hand.
+- Each restored value is read back before its line is dropped; a key that does not read back stays in the ledger for the next replay.
+- At launch the watchdog starts before any setter runs and a stale ledger is replayed before the Dock is hidden; Phase 1-4's `~/Library/Application Support/FocusDock/native-dock.json` is imported into the ledger once, then deleted.
 - State that dies with the process needs no entry: borders, proxies, bar, cards.
 
 ## 5. Surfaces
@@ -168,6 +175,7 @@ Spike S2 removed "jump to any Space instantly, without the slide" from this tabl
 - Element keys: `dock.reveal`, `dock.magnify`, `dock.bounce`, `pill.expand`, `countdown.tick`, `workspace.switch`, `workspace.jump`, `window.move`, `window.resize`, `window.tile`, `border.follow`, `bar.reveal`, `bar.widget`, `menu.open`, `commandBar.open`, `switcher.open`, `overview.open`, `overview.close`, `card.enter`, `card.exit`, `osd.show`, `fleet.row`, `agent.panel`.
 - Defaults copy the system where it has an analogue: Dock timings from rea-dock.md, and the Space slide, Mission Control and magnification springs fitted from 60 fps recordings on the 60 Hz built-in panel (spike S6).
 - Fitted values (spring `response` in seconds, `damping` as the fraction): Space slide 0.52 and 0.91, one spring up to velocity 4, for FocusDock surfaces that follow the slide; Mission Control exit 0.28 and 0.99, with enter as a 0.27 s ease-out because it starts with high velocity; magnification in 0.12 and 0.75, rough because the travel is 10 points.
+- `overview.close` is the 0.28 and 0.99 spring; `dock.bounce` is a timed 0.70 s `dockBounce` curve (the Dock's rise, hold and fall), which a `speed` or an override stretches; `dock.reveal` has a provisional cosine default until it is measured.
 - Frames are paced by the display link at the panel's refresh rate (120 Hz on ProMotion); a debug overlay shows dropped frames per element key.
 
 ```jsonc
@@ -178,7 +186,7 @@ Spike S2 removed "jump to any Space instantly, without the slide" from this tabl
   "elements": {
     "workspace.switch": { "via": "dockSwipe", "velocity": 1.0 },
     "workspace.jump":   { "via": "dockSwipe", "velocity": 9999 },
-    "overview.open":    { "spring": { "response": 0.28, "damping": 0.99 } },
+    "overview.open":    { "duration": 0.27, "curve": "easeOut" },
     "dock.magnify":     { "spring": { "response": 0.12, "damping": 0.75 } },
     "window.move":      { "via": "proxy", "duration": 0.22, "curve": "easeInOutCos" },
     "card.enter":       { "spring": { "response": 0.4, "damping": 0.75 } } } }
@@ -188,6 +196,9 @@ Spike S2 removed "jump to any Space instantly, without the slide" from this tabl
 
 - Files in `~/.config/focusdock/`: `modes.json` (exists), `shell.jsonc` (surfaces, motion, input, spaces), `menu.jsonc` (command bar tree, Omarchy schema), `fleet.jsonc` (hosts); each has a JSON Schema in `schemas/` used by the loader, the agent skill and editors.
 - Every file is watched; a valid change applies live with the configured motion, an invalid one keeps the last good config and shows a card plus a bar badge with file, line, column and the schema message.
+- Phase 5 ships the status-item badge (`exclamationmark.triangle`), the problem list in the menu (`file:line:col path: message`) and `focusdock config check [file]`; the card and the bar badge reuse the same `ConfigProblem` list when those surfaces land.
+- Files are parsed as JSON5, which accepts a little more than JSONC; the schemas use JSON Schema 2020-12 through swift-dynamicjson (Apache-2.0, pinned in `Package.resolved`).
+- `modes.json` stays at schema version 1 until Phase 6 adds `space`; in `shell.jsonc` only `motion` is checked and every other section is an open object until its surface lands.
 - Every surface exposes its layout (position, size, segments, order), widgets (which, where, per-widget options), hotkeys (all data, every binding rebindable) and motion keys.
 - Colours are theme tokens (`accent`, `background`, `muted`, ANSI names), never hex in surface config; a per-surface `tokens` block may remap them; Omarchy themes keep working unchanged (THEMES.md).
 - A `focusdock` skill documents the files, schemas and safe-edit rules for agents.
@@ -287,7 +298,14 @@ Design detail lives in [research/fleet-agent.md](research/fleet-agent.md); this 
    - S13 PASS: the usernoted DB reads on 27.
    - S14 PASS with Windows redesign: `--permission-prompt-tool stdio` confirmed, CIM replaced by .NET plus `nvidia-smi`.
    - Gate: S1 passed, so no fallback was needed (open question 6 settled).
-5. Platform core: capability registry, permissions onboarding, restore ledger and watchdog replay, motion engine, config v2 schemas with in-UI errors, action registry.
+5. Done (2026-10-29): platform core.
+   - Shipped: the capability registry (symbol table, catalog, SPI drift test) with a Capabilities submenu and `focusdock capabilities`; the permission monitor with System Settings deep links and a 2 s poll while a declared grant is missing.
+   - Shipped: the restore ledger with read-back, replayed by the watchdog, at launch, on quit through `.terminateLater`, and by `focusdock restore`.
+   - Shipped: the motion engine with the S6 defaults, driving the pill and the launch bounce, configured from `shell.jsonc` and reloaded live.
+   - Shipped: schema-checked `modes.json` and `shell.jsonc` with positioned problems in the menu, a status-item badge and `focusdock config check`.
+   - Shipped: the action catalog and registry; every menu item with an action runs through it.
+   - Shipped: `FOCUSDOCK_SIGN_IDENTITY` signing, the `dev.focusdock.app` bundle id, and an 80% line-coverage gate on `FocusDockCore` in CI.
+   - Moved later: the Focus status permission (with the Focus widget), the Automation probe (with the first integration that needs it), the `focusdock mode` and `focusdock space` verbs (Phase 6), the config error card and bar badge (with the bar).
 6. Spaces: Space model, DockSwipe switching, bridged moves, routing rules, own borders; AeroSpace as fallback; remove AeroSpace and JankyBorders after a week's soak.
 7. Window motion and tiler: SCK proxy moves, layouts, border follow.
 8. Input and command bar: hidutil leader, Carbon layers, optional Hyper tap, JSONC menu, launcher, cheat sheet; Cmd-Tab switcher and overview.

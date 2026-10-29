@@ -11,7 +11,7 @@ Design and evidence: [docs/SPEC.md](docs/SPEC.md), [docs/research/rea-dock.md](d
 - Running dot, glass hover label, launch bounce until the app finishes launching.
 - Leaving a mode with an exit delay turns the target pill into a countdown ("Social 0:30") next to a white **Stay** button; each extra click on the countdown pill shortens the wait, Stay or a click on the current mode cancels it.
 - When the countdown ends the mode switches: dock tiles, AeroSpace workspace, Focus shortcut, menu bar item.
-- Menu bar item: the mode's symbol and name (or the countdown), a mode menu with the same friction, Edit modes.json, Reveal config folder, warnings, Quit.
+- Menu bar item: the mode's symbol and name (or the countdown), a mode menu with the same friction, Theme, Capabilities, Edit modes.json, Reveal config folder, config problems and warnings, Quit; a warning triangle joins the symbol while `modes.json` or `shell.jsonc` has problems.
 - The system Dock is auto-hidden while FocusDock runs and restored on quit, on SIGTERM/SIGINT/SIGHUP, and by a watchdog process if FocusDock crashes.
 - Respects Reduce Transparency (opaque platter) and Reduce Motion (fade pulse instead of a bounce, no rolling countdown digits).
 
@@ -76,6 +76,18 @@ focusdock theme reset
 - Zed, btop and Claude Code get only their `theme` / `color_theme` key changed; the first switch saves your values and reset restores them byte for byte.
 - The exact files and include points are in [docs/THEMES.md](docs/THEMES.md).
 
+## Commands
+
+```sh
+focusdock config check [file]                # modes.json and shell.jsonc, or one file; file:line:col problems, exit 1 if any
+focusdock restore                            # replays the restore ledger by hand, as the watchdog does after a crash
+focusdock capabilities                       # each private-API capability: available, missing symbols, or needed permission
+```
+
+- `config check` never touches the running dock; a file that does not exist counts as clean, since defaults apply.
+- `restore` prints each key it put back and exits 1 if one did not read back; that key stays in the ledger.
+- `capabilities` judges permissions as this process sees them, so from a terminal it shows the terminal's grants; the menu bar's **Capabilities** submenu shows the app's own.
+
 ## AeroSpace
 
 FocusDock drives [AeroSpace](https://github.com/nikitabobko/AeroSpace) through its CLI; it never writes the AeroSpace config (Nix owns it).
@@ -135,14 +147,14 @@ The latest end-to-end results are in [docs/research/e2e-phase3.md](docs/research
 
 FocusDock calls the `CoreDockSetAutoHideEnabled` SPI, resolved at runtime with `dlsym`; the Dock applies it live, no restart.
 It also sets `com.apple.dock autohide-delay` to 1000 s so the hidden Dock does not slide up when the cursor touches the bottom edge.
-Before hiding it writes your original autohide setting and `autohide-delay` (value or absent) to `~/Library/Application Support/FocusDock/native-dock.json`.
-That file exists only while FocusDock has the Dock hidden: a normal quit restores both settings and deletes it.
+Before hiding it appends your original autohide setting and `autohide-delay` (value or absent) to the restore ledger, `~/.local/state/focusdock/restore.jsonl`.
+The ledger has lines only while FocusDock has the Dock hidden: a normal quit replays it, reads each setting back, and empties it.
 The running Dock reads `autohide-delay` only when it starts, so at launch FocusDock restarts the Dock once (SIGTERM, same as `killall Dock`) unless the running Dock already has the delay.
 It knows that from `~/Library/Application Support/FocusDock/primed-dock.json`, which records the PID and start time of the last Dock started with the delay in place, or from a Dock that started after FocusDock wrote the delay.
 That record survives quits, so relaunching FocusDock in the same login session does not restart the Dock again.
 FocusDock enables autohide only once the primed Dock is running; if no Dock comes back within 5 s, it restores the settings and leaves the Dock visible.
-If FocusDock crashes, its watchdog (the same binary started with `--watchdog <pid>`) restores from the file; the next launch also keeps the recorded original instead of recording "hidden".
-If the system Dock ever stays hidden, run `defaults write com.apple.dock autohide -bool false && killall Dock`.
+If FocusDock crashes, its watchdog (the same binary started with `--watchdog <pid>`) replays the ledger; the next launch replays anything still there before hiding again, so it never records "hidden" as your original.
+If the system Dock ever stays hidden, run `focusdock restore`, or `defaults write com.apple.dock autohide -bool false && killall Dock`.
 
 ## Permissions
 
