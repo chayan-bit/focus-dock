@@ -27,3 +27,6 @@ jobs:
       - run: ./scripts/coverage.sh 80
         timeout-minutes: 5
       - run: ./scripts/build-app.sh
+      # A .terminateLater quit must reply even when terminate is entered from the main queue.
+      - run: ./scripts/check-quit.sh
+        timeout-minutes: 2

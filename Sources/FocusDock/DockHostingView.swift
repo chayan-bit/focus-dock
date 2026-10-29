@@ -66,9 +66,11 @@ final class DockHostingView: NSHostingView<MotionScope> {
         let point = canvasPoint(event)
         guard model.layout.isOnPlatter(point), model.layout.hit(at: point) == nil else { return }
         let menu = NSMenu()
-        menu.addItem(withTitle: "Quit FocusDock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        menu.addItem(withTitle: "Quit FocusDock", action: #selector(quit), keyEquivalent: "").target = self
         NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
+
+    @objc private func quit() { MainRunLoop.terminate() }
 
     private func updateHover(_ event: NSEvent) {
         let hovered: String? = switch model.layout.hit(at: canvasPoint(event)) {

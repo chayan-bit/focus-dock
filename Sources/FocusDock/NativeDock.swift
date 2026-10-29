@@ -139,13 +139,14 @@ enum NativeDock {
     }
 
     /// Routes termination signals through NSApp.terminate, so they quit through the same
-    /// ledger replay as the menu (AppDelegate.applicationShouldTerminate).
+    /// ledger replay as the menu (AppDelegate.applicationShouldTerminate). The handler runs in a
+    /// main-queue block, so terminate is called from the run loop instead (MainRunLoop).
     @MainActor
     static func installSignalHandlers() -> [DispatchSourceSignal] {
         [SIGTERM, SIGINT, SIGHUP].map { sig in
             signal(sig, SIG_IGN)
             let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
-            source.setEventHandler { MainActor.assumeIsolated { NSApp.terminate(nil) } }
+            source.setEventHandler { MainRunLoop.terminate() }
             source.resume()
             return source
         }

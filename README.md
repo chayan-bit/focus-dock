@@ -120,6 +120,7 @@ Requires Xcode with the macOS 27 SDK (Swift 6.4); runs on macOS 26 or later.
 swift test                 # unit tests (FocusDockCore)
 scripts/coverage.sh        # the same tests with coverage; fails below 80% lines on FocusDockCore, as CI does
 scripts/build-app.sh       # prints the path of build/FocusDock.app
+scripts/check-quit.sh      # quits a bare test app the way FocusDock quits; fails if the quit can deadlock
 ```
 
 The app is signed ad hoc unless `FOCUSDOCK_SIGN_IDENTITY` names a code-signing identity.

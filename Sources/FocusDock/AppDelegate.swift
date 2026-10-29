@@ -19,9 +19,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// The last `shell.jsonc` load's problems; the last good motion stays applied meanwhile.
     private var shellError: ConfigError?
     /// Two Dock read-backs at the ledger's 2 s timeout each, plus the lock; past it the watchdog takes over.
-    private static let quitReplayTimeout: Duration = .seconds(5)
+    private static let quitReplayTimeout: TimeInterval = 5
     private var isTerminating = false
-    private var hasRepliedToTerminate = false
+    private static var hasRepliedToTerminate = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         signalSources = NativeDock.installSignalHandlers()
@@ -96,21 +96,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Quit, from the menu, the dock, `app.quit` or a signal: AppKit waits while the restore
     /// ledger replays off the main thread, then finishes. A replay stuck past the timeout does
     /// not hold quit hostage: the watchdog replays whatever is left once this process exits.
+    /// Neither path touches the main queue, which AppKit's wait may not drain (MainRunLoop).
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard !isTerminating else { return .terminateLater }
         isTerminating = true
-        Task { [weak self] in
+        Task.detached {
             await NativeDock.replayLogging()
-            self?.replyToTerminate("restore ledger replayed")
+            MainRunLoop.perform { AppDelegate.replyToTerminate("restore ledger replayed") }
         }
-        Task { [weak self] in
-            try? await Task.sleep(for: Self.quitReplayTimeout)
-            self?.replyToTerminate("restore ledger replay timed out; the watchdog finishes it")
+        DispatchQueue.global().asyncAfter(deadline: .now() + Self.quitReplayTimeout) {
+            MainRunLoop.perform { AppDelegate.replyToTerminate("restore ledger replay timed out; the watchdog finishes it") }
         }
         return .terminateLater
     }
 
-    private func replyToTerminate(_ reason: String) {
+    /// The first caller wins; both run on the main thread from the run loop.
+    private static func replyToTerminate(_ reason: String) {
         guard !hasRepliedToTerminate else { return }
         hasRepliedToTerminate = true
         NSLog("FocusDock: quitting, %@", reason)

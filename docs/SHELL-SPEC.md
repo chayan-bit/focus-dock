@@ -94,6 +94,7 @@ Spike S2 removed "jump to any Space instantly, without the slide" from this tabl
 - Pure logic (layouts, motion resolution, policy, config validation, fleet parsing) lives in `FocusDockCore` with unit tests, as today.
 - Main-thread rule (spike run D): any synchronous wait on the main thread must pump events (`nextEventMatchingMask` + `sendEvent`), or Carbon hotkeys and AppKit, UserNotifications and ScreenCaptureKit callbacks are lost until it returns; nested run loops must not run inside a GCD main-queue block.
 - Quit never waits on the main thread either: `applicationShouldTerminate` returns `.terminateLater`, replays the restore ledger off the main thread, then replies; a replay stuck for 5 s replies anyway and the watchdog finishes it.
+- AppKit's `.terminateLater` wait spins the run loop inside `terminate:`, and libdispatch never drains the main queue re-entrantly, so every quit trigger calls `terminate:` from a run-loop block and the reply arrives the same way (`CFRunLoopPerformBlock` in the common modes, which include `NSModalPanelRunLoopMode`), never through the main queue; `scripts/check-quit.sh` guards this.
 - Borderless overlay windows must be checked on 27: the spike's borderless marker window never reached the screen (run F).
 
 ### 4.2 Permissions onboarding

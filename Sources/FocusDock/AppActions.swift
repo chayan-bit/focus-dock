@@ -26,8 +26,9 @@ enum AppActions {
             }
             permissions.request(permission)
         }
-        // NSApp.terminate replays the restore ledger before quitting (AppDelegate.applicationShouldTerminate).
-        registry.register("app.quit") { _ in NSApp.terminate(nil) }
+        // Handlers run in a main-actor task, so terminate goes through the run loop (MainRunLoop);
+        // it replays the restore ledger before quitting (AppDelegate.applicationShouldTerminate).
+        registry.register("app.quit") { _ in MainRunLoop.terminate() }
     }
 
     private static func neighbour(_ engine: ThemeEngine, offset: Int) throws -> String {
