@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FocusDock shell.jsonc",
+  "$comment": "Only the motion section is checked; every other section is an open object until its surface lands. Names under motion.elements are the MotionKey raw values (a drift test keeps them equal).",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": { "const": 2 },
+    "motion": { "$ref": "#/$defs/motion" }
+  },
+  "$defs": {
+    "seconds": { "type": "number", "minimum": 0 },
+    "curve": {
+      "description": "A named curve, or cubic-bezier control points.",
+      "if": { "type": "string" },
+      "then": { "enum": ["linear", "easeIn", "easeOut", "easeInOut", "easeInOutCos", "dockBounce"] },
+      "else": {
+        "type": "object",
+        "required": ["bezier"],
+        "additionalProperties": false,
+        "properties": { "bezier": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number" } } }
+      }
+    },
+    "spring": {
+      "type": "object",
+      "required": ["response", "damping"],
+      "additionalProperties": false,
+      "properties": {
+        "response": { "type": "number", "exclusiveMinimum": 0, "description": "Seconds." },
+        "damping": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "Damping fraction; 1 is critically damped." }
+      }
+    },
+    "spec": {
+      "description": "How one element moves: a spring, a timed curve, or a `via` driver.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "spring": { "$ref": "#/$defs/spring" },
+        "via": { "enum": ["dockSwipe", "proxy", "crossFade", "instant"] },
+        "duration": { "$ref": "#/$defs/seconds" },
+        "curve": { "$ref": "#/$defs/curve" },
+        "velocity": { "type": "number" }
+      },
+      "allOf": [
+        { "if": { "required": ["via"], "properties": { "via": { "const": "dockSwipe" } } }, "then": { "required": ["velocity"] } },
+        { "if": { "required": ["via"], "properties": { "via": { "const": "proxy" } } }, "then": { "required": ["duration", "curve"] } },
+        { "if": { "required": ["via"], "properties": { "via": { "const": "crossFade" } } }, "then": { "required": ["duration"] } },
+        { "if": { "not": { "anyOf": [{ "required": ["spring"] }, { "required": ["via"] }] } }, "then": { "required": ["duration", "curve"] } }
+      ]
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "speed": { "type": "number", "minimum": 0, "description": "Divides durations and spring responses; 0 is instant." },
+        "reduceMotion": { "enum": ["system", "always", "never"] },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "spring": { "$ref": "#/$defs/spring", "description": "Everything without a measured default." },
+            "spaceSlide": { "$ref": "#/$defs/spring" }
+          }
+        },
+        "elements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dock.reveal": { "$ref": "#/$defs/spec" },
+            "dock.magnify": { "$ref": "#/$defs/spec" },
+            "dock.bounce": { "$ref": "#/$defs/spec" },
+            "pill.expand": { "$ref": "#/$defs/spec" },
+            "countdown.tick": { "$ref": "#/$defs/spec" },
+            "workspace.switch": { "$ref": "#/$defs/spec" },
+            "workspace.jump": { "$ref": "#/$defs/spec" },
+            "window.move": { "$ref": "#/$defs/spec" },
+            "window.resize": { "$ref": "#/$defs/spec" },
+            "window.tile": { "$ref": "#/$defs/spec" },
+            "border.follow": { "$ref": "#/$defs/spec" },
+            "bar.reveal": { "$ref": "#/$defs/spec" },
+            "bar.widget": { "$ref": "#/$defs/spec" },
+            "menu.open": { "$ref": "#/$defs/spec" },
+            "commandBar.open": { "$ref": "#/$defs/spec" },
+            "switcher.open": { "$ref": "#/$defs/spec" },
+            "overview.open": { "$ref": "#/$defs/spec" },
+            "overview.close": { "$ref": "#/$defs/spec" },
+            "card.enter": { "$ref": "#/$defs/spec" },
+            "card.exit": { "$ref": "#/$defs/spec" },
+            "osd.show": { "$ref": "#/$defs/spec" },
+            "fleet.row": { "$ref": "#/$defs/spec" },
+            "agent.panel": { "$ref": "#/$defs/spec" }
+          }
+        }
+      }
+    }
+  }
+}

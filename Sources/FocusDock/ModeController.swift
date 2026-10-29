@@ -9,7 +9,7 @@ final class ModeController {
 
     private let model: DockModel
     private let workspace: Workspace
-    private let store = ConfigStore()
+    private let store = ConfigStore<ModesConfig>.modes()
     private let aerospace = AeroSpace()
     private let focus = FocusSwitcher()
     private var machine: ModeMachine
@@ -28,7 +28,7 @@ final class ModeController {
         case .success(let valid): config = valid
         case .failure(let error):
             configError = error
-            config = ConfigStore.defaultConfig()
+            config = ConfigStore<ModesConfig>.defaultConfig()
         }
         machine = ModeMachine(config: config, restoredModeID: UserDefaults.standard.string(forKey: Self.savedModeKey))
     }
@@ -153,7 +153,7 @@ final class ModeController {
         switch store.load() {
         case .success(let config):
             configError = nil
-            NSLog("FocusDock: reloaded %@", ConfigStore.file.path)
+            NSLog("FocusDock: reloaded %@", ConfigFiles.modes.path)
             update(machine.reloaded(with: config))
             refreshFocus(applyAfter: false)
         case .failure(let error):

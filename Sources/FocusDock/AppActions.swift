@@ -17,8 +17,8 @@ enum AppActions {
         registry.register("theme.next") { _ in try await setTheme(engine, neighbour(engine, offset: 1)) }
         registry.register("theme.prev") { _ in try await setTheme(engine, neighbour(engine, offset: -1)) }
         registry.register("theme.reset") { _ in try await resetTheme(engine) }
-        registry.register("config.edit") { _ in NSWorkspace.shared.open(ConfigStore.file) }
-        registry.register("config.reveal") { _ in NSWorkspace.shared.activateFileViewerSelecting([ConfigStore.file]) }
+        registry.register("config.edit") { _ in NSWorkspace.shared.open(ConfigFiles.modes) }
+        registry.register("config.reveal") { _ in NSWorkspace.shared.activateFileViewerSelecting([ConfigFiles.modes]) }
         registry.register("permission.grant") { arguments in
             guard let permission = Permission(rawValue: arguments[0]) else {
                 let known = Permission.allCases.map(\.rawValue).joined(separator: ", ")

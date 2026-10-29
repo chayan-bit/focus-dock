@@ -174,10 +174,31 @@ struct ConfigLocator {
     }
 
     private func position(_ segments: [ConfigPath.Segment]) -> (line: Int, column: Int)? {
-        for count in stride(from: segments.count, through: 0, by: -1) {
-            if let found = positions[ConfigPath.pointer(segments.prefix(count))] { return found }
+        nearest(segments[...], under: "")?.at ?? positions[""]
+    }
+
+    /// The deepest indexed value on the path. A key that holds `.` (`dock.reveal`) arrives
+    /// as several segments, so each run of keys is also tried as one joined key.
+    private func nearest(_ rest: ArraySlice<ConfigPath.Segment>, under pointer: String) -> (depth: Int, at: (line: Int, column: Int))? {
+        var best: (depth: Int, at: (line: Int, column: Int))?
+        var key = ""
+        for (offset, segment) in rest.enumerated() {
+            let next: String
+            switch segment {
+            case .index(let index):
+                next = pointer + "/\(index)"
+            case .key(let name):
+                key += offset == 0 ? name : ".\(name)"
+                next = pointer + ConfigPath.pointer([.key(key)])
+            }
+            if let at = positions[next] {
+                let deeper = nearest(rest.dropFirst(offset + 1), under: next)
+                let found = deeper.map { (depth: offset + 1 + $0.depth, at: $0.at) } ?? (depth: offset + 1, at: at)
+                if found.depth > (best?.depth ?? 0) { best = found }
+            }
+            if case .index = segment { break }
         }
-        return nil
+        return best
     }
 }
 
@@ -204,6 +225,7 @@ enum SchemaProblem {
     }
 
     private static func message(_ reason: JSONSchemaDraft2020.Reason, value: JSON, schema: JSONSchema) -> String {
+        if case .alwaysFails = reason { return "unknown key" }
         guard case .descriptor(let descriptor, let raw) = schema else { return reason.reason }
         switch reason {
         case .invalidType(let expected, _):

@@ -84,11 +84,11 @@ final class MenuBar: NSObject, NSMenuDelegate {
     }
 
     @objc private func editConfig() {
-        NSWorkspace.shared.open(ConfigStore.file)
+        NSWorkspace.shared.open(ConfigFiles.modes)
     }
 
     @objc private func revealConfig() {
-        NSWorkspace.shared.activateFileViewerSelecting([ConfigStore.file])
+        NSWorkspace.shared.activateFileViewerSelecting([ConfigFiles.modes])
     }
 
     private static func symbol(_ name: String, description: String) -> NSImage? {
