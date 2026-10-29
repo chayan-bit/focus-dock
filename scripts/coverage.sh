@@ -17,7 +17,11 @@ heavy swift build --build-tests --enable-code-coverage
 heavy env LIBDISPATCH_COOPERATIVE_POOL_STRICT=1 swift test --skip-build --enable-code-coverage
 
 BIN="$(swift build --show-bin-path)"
-REPORT="$(xcrun llvm-cov report "$BIN/FocusDockCoreTests.xctest/Contents/MacOS/FocusDockCoreTests" \
+# The bundle name differs by SwiftPM version (FocusDockPackageTests on 6.3, FocusDockCoreTests on 6.4).
+BUNDLES=("$BIN"/*.xctest)
+[[ ${#BUNDLES[@]} -eq 1 && -d ${BUNDLES[0]} ]] || { echo "expected one test bundle in $BIN, found: ${BUNDLES[*]}" >&2; exit 1; }
+TESTS="${BUNDLES[0]}/Contents/MacOS/$(basename "${BUNDLES[0]}" .xctest)"
+REPORT="$(xcrun llvm-cov report "$TESTS" \
   -instr-profile "$BIN/codecov/default.profdata" "$ROOT/Sources/FocusDockCore")"
 echo "$REPORT"
 
