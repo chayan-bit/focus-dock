@@ -196,7 +196,7 @@ Spike S2 removed "jump to any Space instantly, without the slide" from this tabl
 
 - Files in `~/.config/focusdock/`: `modes.json` (exists), `shell.jsonc` (surfaces, motion, input, spaces), `menu.jsonc` (command bar tree, Omarchy schema), `fleet.jsonc` (hosts); each has a JSON Schema in `schemas/` used by the loader, the agent skill and editors.
 - Every file is watched; a valid change applies live with the configured motion, an invalid one keeps the last good config and shows a card plus a bar badge with file, line, column and the schema message.
-- Phase 5 ships the status-item badge (`exclamationmark.triangle`), the problem list in the menu (`file:line:col path: message`) and `focusdock config check [file]`; the card and the bar badge reuse the same `ConfigProblem` list when those surfaces land.
+- Phase 5 ships the status-item badge (`exclamationmark.triangle.fill` in place of the mode symbol, never widening the item, which the notch would otherwise hide behind its overflow chevron), the problem list in the menu (`file:line:col path: message`) and `focusdock config check [file]`; the card and the bar badge reuse the same `ConfigProblem` list when those surfaces land.
 - Files are parsed as JSON5, which accepts a little more than JSONC; the schemas use JSON Schema 2020-12 through swift-dynamicjson (Apache-2.0, pinned in `Package.resolved`).
 - `modes.json` stays at schema version 1 until Phase 6 adds `space`; in `shell.jsonc` only `motion` is checked and every other section is an open object until its surface lands.
 - Every surface exposes its layout (position, size, segments, order), widgets (which, where, per-widget options), hotkeys (all data, every binding rebindable) and motion keys.

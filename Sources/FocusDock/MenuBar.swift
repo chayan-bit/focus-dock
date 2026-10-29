@@ -2,9 +2,9 @@ import AppKit
 import FocusDockCore
 
 /// The status item: the active mode's symbol and name, or the pending target's countdown, with
-/// a warning badge while a config file has problems; and a menu to switch modes (through the
-/// same friction as the dock), pick a theme, see capabilities, open the config, see problems
-/// and warnings, and quit. Every item with a catalog action runs it through `ActionRegistry`.
+/// a warning triangle in place of the symbol while a config file has problems; and a menu to
+/// switch modes (through the same friction as the dock), pick a theme, see capabilities, open
+/// the config, see problems and warnings, and quit. Every item with a catalog action runs it through `ActionRegistry`.
 @MainActor
 final class MenuBar: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -45,9 +45,12 @@ final class MenuBar: NSObject, NSMenuDelegate {
             shown = controller.activeMode
             title = shown.name
         }
-        let symbol = Self.symbol(shown.symbol, description: shown.name)
         let hasProblems = !configProblems.isEmpty
-        button.image = hasProblems ? Self.badged(symbol, description: "\(shown.name), config has problems") : symbol
+        let symbol = Self.symbol(shown.symbol, description: shown.name)
+        let warning = Self.symbol(Self.badge, description: "\(shown.name), config has problems")
+        // The same width in both states: a wider item can be pushed behind the notch's overflow chevron.
+        let width = max(symbol?.size.width ?? 0, warning?.size.width ?? 0)
+        button.image = (hasProblems ? warning : symbol).map { Self.padded($0, toWidth: width) }
         button.title = " " + title
         button.toolTip = "FocusDock: \(controller.activeMode.name)" + (hasProblems ? "\nConfig has problems; see the menu" : "")
     }
@@ -118,7 +121,7 @@ final class MenuBar: NSObject, NSMenuDelegate {
     // app.quit goes through NSApp.terminate, so the Dock comes back as on any other quit.
     @objc private func quit() { actions.performFromMenu("app.quit") }
 
-    private static let badge = "exclamationmark.triangle"
+    private static let badge = "exclamationmark.triangle.fill"
 
     private static func symbol(_ name: String, description: String) -> NSImage? {
         let image = NSImage(systemSymbolName: name, accessibilityDescription: description)
@@ -127,19 +130,16 @@ final class MenuBar: NSObject, NSMenuDelegate {
         return image
     }
 
-    /// The mode symbol with the warning triangle after it, one template image so the bar tints both.
-    private static func badged(_ image: NSImage?, description: String) -> NSImage? {
-        guard let warning = symbol(badge, description: description) else { return image }
-        guard let image else { return warning }
-        let gap: CGFloat = 3
-        let size = NSSize(width: image.size.width + gap + warning.size.width, height: max(image.size.height, warning.size.height))
-        let composite = NSImage(size: size, flipped: false) { _ in
-            image.draw(in: NSRect(origin: NSPoint(x: 0, y: (size.height - image.size.height) / 2), size: image.size))
-            warning.draw(in: NSRect(origin: NSPoint(x: image.size.width + gap, y: (size.height - warning.size.height) / 2), size: warning.size))
+    /// `image` centred in `width`, so swapping symbols never changes the item's width.
+    private static func padded(_ image: NSImage, toWidth width: CGFloat) -> NSImage {
+        guard image.size.width < width else { return image }
+        let size = NSSize(width: width, height: image.size.height)
+        let padded = NSImage(size: size, flipped: false) { _ in
+            image.draw(in: NSRect(origin: NSPoint(x: (width - image.size.width) / 2, y: 0), size: image.size))
             return true
         }
-        composite.isTemplate = true
-        composite.accessibilityDescription = description
-        return composite
+        padded.isTemplate = true
+        padded.accessibilityDescription = image.accessibilityDescription
+        return padded
     }
 }

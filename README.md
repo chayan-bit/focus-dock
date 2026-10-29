@@ -11,7 +11,7 @@ Design and evidence: [docs/SPEC.md](docs/SPEC.md), [docs/research/rea-dock.md](d
 - Running dot, glass hover label, launch bounce until the app finishes launching.
 - Leaving a mode with an exit delay turns the target pill into a countdown ("Social 0:30") next to a white **Stay** button; each extra click on the countdown pill shortens the wait, Stay or a click on the current mode cancels it.
 - When the countdown ends the mode switches: dock tiles, AeroSpace workspace, Focus shortcut, menu bar item.
-- Menu bar item: the mode's symbol and name (or the countdown), a mode menu with the same friction, Theme, Capabilities, Edit modes.json, Reveal config folder, config problems and warnings, Quit; a warning triangle joins the symbol while `modes.json` or `shell.jsonc` has problems.
+- Menu bar item: the mode's symbol and name (or the countdown), a mode menu with the same friction, Theme, Capabilities, Edit modes.json, Reveal config folder, config problems and warnings, Quit; a warning triangle replaces the symbol, at the same width, while `modes.json` or `shell.jsonc` has problems.
 - The system Dock is auto-hidden while FocusDock runs and restored on quit, on SIGTERM/SIGINT/SIGHUP, and by a watchdog process if FocusDock crashes.
 - Respects Reduce Transparency (opaque platter) and Reduce Motion (fade pulse instead of a bounce, no rolling countdown digits).
 
