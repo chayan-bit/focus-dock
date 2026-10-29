@@ -123,15 +123,6 @@ public struct ExitPolicy: Codable, Equatable, Sendable {
     public func delay(to target: String) -> Double { to[target] ?? delaySeconds }
 }
 
-/// Every problem found in a config file, in file order.
-public struct ConfigError: Error, Equatable, CustomStringConvertible {
-    public let problems: [String]
-
-    public init(_ problems: [String]) { self.problems = problems }
-
-    public var description: String { problems.joined(separator: "\n") }
-}
-
 public struct RGB: Equatable, Sendable {
     public let red: Double, green: Double, blue: Double
 
@@ -145,18 +136,16 @@ public struct RGB: Equatable, Sendable {
 }
 
 extension ModesConfig {
-    public static func parse(_ data: Data) throws(ConfigError) -> ModesConfig {
-        let config: ModesConfig
-        do {
-            config = try JSONDecoder().decode(ModesConfig.self, from: data)
-        } catch let error as DecodingError {
-            throw ConfigError([ConfigValidation.describe(error)])
-        } catch {
-            throw ConfigError([String(describing: error)])
-        }
-        let problems = ConfigValidation.problems(in: config)
-        guard problems.isEmpty else { throw ConfigError(problems) }
-        return config
+    public static let fileName = "modes.json"
+
+    /// `schemas` defaults to the shipped `schemas/` (`ShippedResources`).
+    public static func document(schemas: URL = ShippedResources.schemas) -> ConfigDocument<ModesConfig> {
+        ConfigDocument(fileName: fileName, schema: schemas.appending(path: "modes.schema.json"), semantic: ConfigValidation.problems(in:))
+    }
+
+    /// Structure and value rules live in `schemas/modes.schema.json`; cross-references are checked here.
+    public static func parse(_ data: Data, schemas: URL = ShippedResources.schemas) throws(ConfigError) -> ModesConfig {
+        try document(schemas: schemas).parse(data)
     }
 
     public func encoded() throws -> Data {
@@ -166,85 +155,22 @@ extension ModesConfig {
     }
 }
 
+/// The checks `schemas/modes.schema.json` cannot express: references between modes.
 enum ConfigValidation {
-    static func problems(in config: ModesConfig) -> [String] {
-        var problems: [String] = []
-        if config.version != ModesConfig.currentVersion {
-            problems.append("version: must be \(ModesConfig.currentVersion), found \(config.version)")
-        }
-        if config.modes.isEmpty { problems.append("modes: at least one mode is required") }
+    static func problems(in config: ModesConfig) -> [ConfigProblem] {
+        var problems: [ConfigProblem] = []
         let ids = Set(config.modes.map(\.id))
         var seen: Set<String> = []
         for (index, mode) in config.modes.enumerated() {
-            if !seen.insert(mode.id).inserted { problems.append("modes[\(index)].id: \"\(mode.id)\" is used by an earlier mode") }
-            problems += self.problems(in: mode, at: "modes[\(index)]", knownIDs: ids)
-        }
-        if let initial = config.initialMode, !ids.contains(initial) {
-            problems.append("initialMode: no mode has id \"\(initial)\"")
-        }
-        return problems
-    }
-
-    private static func problems(in mode: Mode, at path: String, knownIDs: Set<String>) -> [String] {
-        var problems: [String] = []
-        let required = [("id", mode.id), ("name", mode.name), ("symbol", mode.symbol), ("workspace", mode.workspace)]
-        for (key, value) in required where value.trimmingCharacters(in: .whitespaces).isEmpty {
-            problems.append("\(path).\(key): must not be empty")
-        }
-        if RGB(hex: mode.color) == nil { problems.append("\(path).color: \"\(mode.color)\" is not a #RRGGBB colour") }
-        for (index, app) in mode.apps.enumerated() where app.isEmpty {
-            problems.append("\(path).apps[\(index)]: must not be empty")
-        }
-        for (index, web) in mode.webApps.enumerated() {
-            if web.name.isEmpty { problems.append("\(path).webApps[\(index)].name: must not be empty") }
-            if !["http", "https"].contains(web.url.scheme?.lowercased() ?? "") || web.url.host() == nil {
-                problems.append("\(path).webApps[\(index)].url: \"\(web.url.absoluteString)\" is not an http(s) URL")
+            if !seen.insert(mode.id).inserted {
+                problems.append(ConfigProblem(path: "modes[\(index)].id", message: "\"\(mode.id)\" is used by an earlier mode"))
             }
-        }
-        return problems + exitProblems(mode.exit, at: "\(path).exit", knownIDs: knownIDs)
-    }
-
-    private static func exitProblems(_ exit: ExitPolicy, at path: String, knownIDs: Set<String>) -> [String] {
-        var problems: [String] = []
-        if exit.delaySeconds < 0 { problems.append("\(path).delaySeconds: must not be negative") }
-        if exit.perPressSeconds < 0 { problems.append("\(path).perPressSeconds: must not be negative") }
-        for (target, seconds) in exit.to.sorted(by: { $0.key < $1.key }) {
-            if !knownIDs.contains(target) { problems.append("\(path).to.\(target): no mode has id \"\(target)\"") }
-            if seconds < 0 { problems.append("\(path).to.\(target): must not be negative") }
+            for target in mode.exit.to.keys.sorted() where !ids.contains(target) {
+                problems.append(ConfigProblem(path: "modes[\(index)].exit.to.\(target)", message: "no mode has id \"\(target)\""))
+            }        }
+        if let initial = config.initialMode, !ids.contains(initial) {
+            problems.append(ConfigProblem(path: "initialMode", message: "no mode has id \"\(initial)\""))
         }
         return problems
-    }
-
-    static func describe(_ error: DecodingError) -> String {
-        switch error {
-        case .keyNotFound(let key, let context):
-            return "\(path(context.codingPath + [key])): missing"
-        case .typeMismatch(let type, let context):
-            return "\(path(context.codingPath)): expected \(typeName(type))"
-        case .valueNotFound(let type, let context):
-            return "\(path(context.codingPath)): expected \(typeName(type)), found null"
-        case .dataCorrupted(let context):
-            let underlying = (context.underlyingError as NSError?)?.userInfo[NSDebugDescriptionErrorKey] as? String
-            let detail = underlying ?? context.debugDescription
-            return context.codingPath.isEmpty ? "not valid JSON: \(detail)" : "\(path(context.codingPath)): \(detail)"
-        @unknown default:
-            return String(describing: error)
-        }
-    }
-
-    private static func path(_ keys: [any CodingKey]) -> String {
-        let joined = keys.map { key in key.intValue.map { "[\($0)]" } ?? ".\(key.stringValue)" }.joined()
-        let trimmed = joined.hasPrefix(".") ? String(joined.dropFirst()) : joined
-        return trimmed.isEmpty ? "file" : trimmed
-    }
-
-    private static func typeName(_ type: Any.Type) -> String {
-        switch type {
-        case is String.Type: "a string"
-        case is Double.Type, is Int.Type: "a number"
-        case is Bool.Type: "true or false"
-        case is [Any].Type: "an array"
-        default: "an object"
-        }
     }
 }

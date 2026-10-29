@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FocusDock modes.json",
+  "$comment": "Structural rules only; cross-references (unique ids, initialMode, exit.to targets) are checked by FocusDock. Optional members may be null, which means absent. patternErrorMessage is the message shown when a pattern fails (the VS Code JSON convention).",
+  "type": "object",
+  "required": ["version", "modes"],
+  "properties": {
+    "version": { "const": 1 },
+    "initialMode": { "type": ["string", "null"], "description": "Mode id used when the last active mode no longer exists." },
+    "modes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/mode" }
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "pattern": "\\S", "patternErrorMessage": "must not be empty" },
+    "seconds": { "type": "number", "minimum": 0 },
+    "optionalSeconds": { "type": ["number", "null"], "minimum": 0 },
+    "mode": {
+      "type": "object",
+      "required": ["id", "name", "symbol", "color", "workspace"],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" },
+        "name": { "$ref": "#/$defs/text" },
+        "symbol": { "$ref": "#/$defs/text", "description": "SF Symbol name." },
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$", "patternErrorMessage": "must be a #RRGGBB colour" },
+        "workspace": { "$ref": "#/$defs/text", "description": "AeroSpace workspace that holds the mode's windows." },
+        "apps": {
+          "type": ["array", "null"],
+          "description": "Bundle ids, in dock order.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "webApps": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "required": ["name", "url"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "url": { "type": "string", "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://[^/?#\\s]+", "patternErrorMessage": "must be an http(s) URL" }
+            }
+          }
+        },
+        "focus": { "type": ["string", "null"], "description": "macOS Focus to turn on, via the Shortcuts shortcut \"FocusDock <focus>\"." },
+        "exit": {
+          "type": ["object", "null"],
+          "description": "Friction when leaving this mode; absent means leaving is free.",
+          "properties": {
+            "delaySeconds": { "$ref": "#/$defs/optionalSeconds" },
+            "perPressSeconds": { "$ref": "#/$defs/optionalSeconds" },
+            "to": { "type": ["object", "null"], "additionalProperties": { "$ref": "#/$defs/seconds" } }
+          }
+        },
+        "allow": { "type": ["string", "null"] },
+        "private": { "type": ["boolean", "null"] }
+      }
+    }
+  }
+}

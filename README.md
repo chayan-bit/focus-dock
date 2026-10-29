@@ -30,7 +30,9 @@ On first launch FocusDock writes a default with three modes, filled with whichev
 | Social | S | Slack, WhatsApp, Discord | free |
 
 Edit the file in any editor (or let Claude Code edit it); FocusDock reloads it on save.
-An invalid file is rejected: the menu lists every problem with its JSON path (for example `modes[1].exit.to.socal: no mode has id "socal"`) and the last good config stays live.
+Comments (`//`, `/* */`) and trailing commas are allowed.
+The file is checked against [schemas/modes.schema.json](schemas/modes.schema.json), which editors can use too, then for references between modes.
+An invalid file is rejected: the menu lists every problem with its line, column and JSON path (for example `modes.json:7:16 modes[1].color: must be a #RRGGBB colour`) and the last good config stays live.
 Deleting the file brings the default back.
 
 ```json
@@ -150,6 +152,6 @@ Accessibility (badges, window titles) and Automation for Chrome arrive in later 
 
 - `Sources/FocusDockCore` themes: `ThemeColors` (colors.toml reader and resolver), `ColorMath` (mix, gradients), `TemplateRenderer`, `ThemePaths` + `ThemeRules` (layout, precedence, git safety rule, background choice), `ThemeStaging`, `ThemeEngine` (set, swap, retint batches, reset), `ThemeTargets` (Zed, Claude Code, btop, saved originals), `SettingsText` (one-key JSONC and conf edits), `ShellTheme`, `FileLock`.
 - `Sources/FocusDock` themes: `ThemeCLI`, `ThemeSystem` (engine wiring, JankyBorders and wallpaper targets), `ThemeMenu`, `ShellThemeWatcher`, `ShellStyle`.
-- `Themes/`, `Templates/`: shipped themes and templates, copied into the app by `scripts/build-app.sh`.
-- `Sources/FocusDockCore`: pure, unit-tested logic: `Config` (modes.json schema and validation), `DefaultModes`, `ModeMachine` (the mode-switch state machine, SPEC 6), `WindowRouting` (window routing, executable lookup, Focus shortcut names), `FocusFollow` (subscription events, jump-to-other-mode decision, echo token), `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (a mode's tiles), `NativeDockKeeper` (hide/restore decisions), `DockPriming` (whether the running Dock must restart).
+- `Themes/`, `Templates/`, `schemas/`: shipped themes, templates and config JSON Schemas, copied into the app by `scripts/build-app.sh`.
+- `Sources/FocusDockCore`: pure, unit-tested logic: `Config` (modes.json model and cross-reference checks), `ConfigDocument` (JSONC, JSON Schema and Codable pipeline with positioned problems), `JSONCPositions`, `DefaultModes`, `ModeMachine` (the mode-switch state machine, SPEC 6), `WindowRouting` (window routing, executable lookup, Focus shortcut names), `FocusFollow` (subscription events, jump-to-other-mode decision, echo token), `DockMetrics` (every visual constant), `PlatterLayout` (geometry shared by drawing and hit-testing), `TileList` (a mode's tiles), `NativeDockKeeper` (hide/restore decisions), `DockPriming` (whether the running Dock must restart).
 - `Sources/FocusDock`: the AppKit/SwiftUI app: `ModeController` (runs the machine's side effects), `ConfigStore` (load, default, hot reload), `AeroSpace`, `Focus`, `MenuBar`, `DockPanel`, `DockHostingView` (mouse input), `DockView`/`PillView`/`TileView`, `Model`, `Workspace`, `NativeDock`, `DockPrimer`, `ProcessRunner`.
